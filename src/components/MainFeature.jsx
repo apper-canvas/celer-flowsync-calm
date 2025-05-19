@@ -89,12 +89,21 @@ const formatRelativeTime = (dateString) => {
 }
 
 const MainFeature = () => {
+  // Refs
+  const commentInputRef = useRef(null)
+  const replyInputRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const dragCounter = useRef(0)
+  const linkifyInstance = useRef(linkify())
+  const dropZoneRef = useRef(null)
+  
   // Icons
   const PlusIcon = getIcon('plus')
   const SendIcon = getIcon('send')
   const ReplyIcon = getIcon('reply')
   const MessageCircleIcon = getIcon('message-circle')
   const CornerDownRightIcon = getIcon('corner-down-right')
+  const FileIcon = getIcon('file')
   const FileTextIcon = getIcon('file-text')
   const ImageIcon = getIcon('image')
   const FileArchiveIcon = getIcon('file-archive')
@@ -103,27 +112,8 @@ const MainFeature = () => {
   const XIcon = getIcon('x')
   const CheckCircleIcon = getIcon('check-circle')
   const ClockIcon = getIcon('clock')
-  const LinkIcon = getIcon('link')
-  const AtSignIcon = getIcon('at-sign')
-  const CodeIcon = getIcon('code')
-  const SmileIcon = getIcon('smile')
-  
-  // State
-  const AlertCircleIcon = getIcon('alert-circle') 
-  const FileArchiveIcon = getIcon('file-archive')
-  const TrashIcon = getIcon('trash')
-  const AtSignIcon = getIcon('at-sign')
-  const CodeIcon = getIcon('code')
-  const SmileIcon = getIcon('smile')
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem('flowsync-tasks')
-    return savedTasks ? JSON.parse(savedTasks) : INITIAL_TASKS
-  })
-  const [isAddingTask, setIsAddingTask] = useState(false)
-  const [newTask, setNewTask] = useState({
-    title: '',
+  const AlertCircleIcon = getIcon('alert-circle')
   const [isDraggingFile, setIsDraggingFile] = useState(false)
-  const [isAddingTask, setIsAddingTask] = useState(false)
   const [formattedComment, setFormattedComment] = useState('')
   const [replyTo, setReplyTo] = useState(null)
   const [replyText, setReplyText] = useState('')
@@ -132,7 +122,18 @@ const MainFeature = () => {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const LinkIcon = getIcon('link')
+  const AtSignIcon = getIcon('at-sign')
+  const CodeIcon = getIcon('code')
+  const SmileIcon = getIcon('smile')
+  const PaperclipIcon = getIcon('paperclip')
+  const BoldIcon = getIcon('bold')
+  const ItalicIcon = getIcon('italic')
   
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem('flowsync-tasks')
+    return savedTasks ? JSON.parse(savedTasks) : INITIAL_TASKS
+  })
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -147,43 +148,11 @@ const MainFeature = () => {
     comments: [],
     attachments: []
   })
+  const [isAddingTask, setIsAddingTask] = useState(false)
   
-  // Refs
-  const commentInputRef = useRef(null)
-  const replyInputRef = useRef(null)
-  const fileInputRef = useRef(null)
-  const dragCounter = useRef(0)
-  const linkifyInstance = useRef(linkify())
-  
-  // Team members for mentions
-  const dropZoneRef = useRef(null)
-    control: {
-      backgroundColor: 'transparent',
-      fontSize: '0.875rem',
-      lineHeight: '1.25rem',
-    },
-    input: {
-      margin: 0,
-      padding: 0,
-      height: 'auto',
-      width: '100%'
-    },
-    suggestions: {
-      list: {
-        backgroundColor: 'white',
-        border: '1px solid rgba(0,0,0,0.15)',
-        borderRadius: '0.375rem',
-      },
-    }
-  }
-
-  const TEAM_MEMBERS = [
-    { id: 1, display: 'Alex Morgan' },
-    { id: 2, display: 'Morgan Chen' },
-    { id: 3, display: 'Jamie Wilson' },
-    { id: 4, display: 'Taylor Swift' },
-    { id: 5, display: 'Sam Johnson' }
-  ]
+  const [draggedTask, setDraggedTask] = useState(null)
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [newComment, setNewComment] = useState('')
 
       priority: 'medium',
   // Save tasks to localStorage
@@ -225,338 +194,45 @@ const MainFeature = () => {
     toast.success("Task created successfully")
   }
   
-  // Handle task dragging start
-  const handleDragStart = (task) => {
-    setDraggedTask(task)
-  }
+  // Team members for mentions
+  const TEAM_MEMBERS = [
+    { id: 1, display: 'Alex Morgan' },
+    { id: 2, display: 'Morgan Chen' },
+    { id: 3, display: 'Jamie Wilson' },
+    { id: 4, display: 'Taylor Swift' },
+    { id: 5, display: 'Sam Johnson' }
+  ]
   
-  // Allow dropping
-  const handleDragOver = (e) => {
-    e.preventDefault()
-  }
-  
-  // Handle task dropping into a column
-  const handleDrop = (columnId) => {
-    if (draggedTask && draggedTask.column !== columnId) {
-      const updatedTasks = tasks.map(task => 
-        task.id === draggedTask.id ? { ...task, column: columnId } : task
-      )
-      setTasks(updatedTasks)
-      toast.info(`Task moved to ${COLUMNS.find(col => col.id === columnId).title}`)
+  // Mentions input style
+  const mentionsInputStyle = {
+    control: {
+      backgroundColor: 'transparent',
+      fontSize: '0.875rem',
+      lineHeight: '1.25rem',
+    },
+    input: {
+      margin: 0,
+      padding: 0,
+      height: 'auto',
+      width: '100%'
+    },
+    suggestions: {
+      list: {
+        backgroundColor: 'white',
+        border: '1px solid rgba(0,0,0,0.15)',
+        borderRadius: '0.375rem',
+      },
     }
-    setDraggedTask(null)
-  }
-
-  // Format date to readable format
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric' 
-    })
   }
   
-  // Check if date is past due
-  const isPastDue = (dateString) => {
-    const dueDate = new Date(dateString)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return dueDate < today
-  }
-  
-  // Delete a task
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter(task => task.id !== taskId))
-    setSelectedTask(null)
-    toast.success("Task deleted successfully")
-  }
-  
-  // Apply formatting to text
-  const applyFormatting = (type) => {
-    const input = commentInputRef.current.input
-    
-    if (!input) return
-    
-    const start = input.selectionStart
-    const end = input.selectionEnd
-    const text = newComment
-    
-    let formattedText = text
-    let newCursorPosition = end
-    
-    const selectedText = text.substring(start, end)
-    
-    switch (type) {
-      case 'bold':
-        formattedText = text.substring(0, start) + `**${selectedText}**` + text.substring(end)
-        newCursorPosition = end + 4
-        break
-      case 'italic':
-        formattedText = text.substring(0, start) + `_${selectedText}_` + text.substring(end)
-        newCursorPosition = end + 2
-        break
-      case 'list':
-        formattedText = text.substring(0, start) + `\n- ${selectedText}` + text.substring(end)
-        newCursorPosition = end + 3
-        break
-      case 'code':
-        formattedText = text.substring(0, start) + `\`${selectedText}\`` + text.substring(end)
-        newCursorPosition = end + 2
-        break
-      case 'link':
-        if (selectedText) {
-          formattedText = text.substring(0, start) + `[${selectedText}](url)` + text.substring(end)
-          newCursorPosition = end + 6
-        } else {
-          formattedText = text.substring(0, start) + `[link text](url)` + text.substring(end)
-          newCursorPosition = start + 11
-        }
-        break
-    }
-    
-    setNewComment(formattedText)
-    setTimeout(() => input.setSelectionRange(newCursorPosition, newCursorPosition), 0)
-  }
-  
-  // Add a comment to a task
-  const addComment = (e) => {
-    e.preventDefault()
-    
-    if (!newComment.trim()) {
-      toast.error("Comment cannot be empty")
-      return
-    }
-    
-    const comment = {
-      id: `c-${Date.now()}`,
-      text: newComment,
-      name: 'You', // In a real app, this would be the current user
-      formatted: true, // Flag to indicate this comment uses formatting
-      avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
-      timestamp: new Date().toISOString(),
-      replies: []
-    }
-    
-    const updatedTasks = tasks.map(task => 
-      task.id === selectedTask.id 
-        ? { ...task, comments: [...(task.comments || []), comment] } 
-        : task
-    )
-    
-    setTasks(updatedTasks)
-    setSelectedTask({...selectedTask, comments: [...(selectedTask.comments || []), comment]})
-    setNewComment('')
-    setFormattedComment('')
-    toast.success("Comment added successfully")
-  }
-  
-  // Add a reply to a comment
-  const addReply = (commentId) => {
-    if (!replyText.trim()) {
-      toast.error("Reply cannot be empty")
-      return
-    }
-    
-    const addReplyToComment = (comments) => {
-      return comments.map(comment => {
-        if (comment.id === commentId) {
-          const reply = {
-            id: `r-${Date.now()}`,
-            text: replyText,
-            formatted: true, // Flag to indicate this reply uses formatting
-            name: 'You', // In a real app, this would be the current user
-            avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
-            timestamp: new Date().toISOString(),
-            replies: []
-          }
-          return { 
-            ...comment, 
-  // Convert bytes to readable format
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    ];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    
-    // Convert FileList to Array
-    const fileArray = Array.from(files);
-    
-    // Validate files
-    for (const file of fileArray) {
-      if (file.size > maxSize) {
-        toast.error(`File ${file.name} is too large. Maximum size is 5MB.`);
-        return;
-      }
-      
-      // Validate file type using file-type-browser
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const fileTypeResult = fileType(uint8Array);
-      
-      const mimeType = fileTypeResult ? fileTypeResult.mime : file.type;
-      
-      if (!allowedTypes.includes(mimeType)) {
-        toast.error(`File type ${mimeType} is not supported.`);
-        return;
-      }
-    }
-    
-    setUploading(true);
-    
-    // Simulate upload progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(progressInterval);
-        setUploading(false);
-        setUploadProgress(0);
-        
-        // Add attachments to task
-        const newAttachments = fileArray.map(file => ({
-          id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: URL.createObjectURL(file) // Create a blob URL for preview
-        }));
-        
-        const updatedTasks = tasks.map(task => 
-          task.id === selectedTask.id 
-            ? { ...task, attachments: [...(task.attachments || []), ...newAttachments] } 
-            : task
-        );
-        
-        setTasks(updatedTasks);
-        const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
-        setSelectedTask(updatedTask);
-        toast.success(`${fileArray.length} file(s) uploaded successfully`);
-      }
-    }, 200);
-  }
-
-  // Delete attachment
-  const deleteAttachment = (attachmentId) => {
-    const updatedTasks = tasks.map(task => 
-      task.id === selectedTask.id 
-        ? {
-            ...task, 
-            attachments: task.attachments.filter(att => att.id !== attachmentId) 
-          } 
-        : task
-    );
-    
-    setTasks(updatedTasks);
-    const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
-    setSelectedTask(updatedTask);
-    toast.success("Attachment deleted successfully");
-  }
-
-  // Add emoji to text
-  const addEmoji = (emoji) => {
-    setNewComment(prev => prev + emoji);
-    setShowEmojiPicker(false);
-  }
-  
-  // Common emojis for quick access
-  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
-  
-  // Handle emoji selection for replies
-  const addEmojiToReply = (emoji) => {
-    setReplyText(prev => prev + emoji);
-    setShowEmojiPicker(false);
-  }
-
-  // Process text for display with formatting
-  const processFormattedText = (text) => {
-    if (!text) return '';
-    
-    // Process markdown-like formatting
-    let processedText = text
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic
-      .replace(/_(.*?)_/g, '<em>$1</em>')
-      // Code
-      .replace(/`(.*?)`/g, '<code class="bg-surface-100 dark:bg-surface-700 px-1 py-0.5 rounded text-xs">$1</code>')
-      // Lists
-      .replace(/^- (.*)/gm, '<li>$1</li>')
-      // Replace newlines with <br>
-      .replace(/\n/g, '<br />');
-    
-    // Find and replace links
-    const matches = linkifyInstance.current.match(processedText);
-    if (matches) {
-      let lastIdx = 0;
-      let result = '';
-      
-      matches.forEach(match => {
-        // Add text before the link
-        result += processedText.slice(lastIdx, match.index);
-        
-        // Add the link
-        result += `<a href="${match.url}" target="_blank" rel="noopener noreferrer">${match.text}</a>`;
-        
-        lastIdx = match.lastIndex;
-      });
-      
-      // Add remaining text
-      result += processedText.slice(lastIdx);
-      processedText = result;
-    }
-    
-    // Process mentions
-    return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
-  };
-  
-            replies: [...(comment.replies || []), reply] 
-          }
-        } else if (comment.replies && comment.replies.length > 0) {
-          return { 
-            ...comment, 
-            replies: addReplyToComment(comment.replies) 
-          }
-        }
-        return comment
-      })
-    }
-    
-    const updatedTasks = tasks.map(task => {
-      if (task.id === selectedTask.id) {
-        const updatedComments = addReplyToComment(task.comments || [])
-        return { ...task, comments: updatedComments }
-      }
-      return task
-    })
-
-    // Update selected task to reflect changes
-    const updatedSelectedTask = updatedTasks.find(task => task.id === selectedTask.id)
-
-    setTasks(updatedTasks)
-    setSelectedTask(updatedSelectedTask)
-    setReplyTo(null)
-    setReplyText('')
-    setTasks(updatedTasks)
-    
-    // Update selected task to reflect changes
-    const updatedSelectedTask = updatedTasks.find(task => task.id === selectedTask.id)
-    setSelectedTask(updatedSelectedTask)
-    
-    setReplyTo(null)
-    setFormattedReplyText('')
-    setReplyText('')
-    toast.success("Reply added successfully")
-  }
-
   // Convert bytes to readable format
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
-
+    if (type && type.startsWith('image/')) {
+      return ImageIcon;
+    } else if (type && (type.startsWith('text/') || type.includes('document') || type.includes('pdf'))) {
   // Get icon based on file type
   const getFileIcon = (type) => {
     if (type.startsWith('image/')) {
@@ -564,8 +240,16 @@ const MainFeature = () => {
     } else if (type.startsWith('text/') || type.includes('document') || type.includes('pdf')) {
               onChange={(e) => setReplyText(e.target.value)}
       return FileTextIcon;
+  
+  // Handle task dragging start
+  const handleDragStart = (task) => {
+    setDraggedTask(task)
+  }
     } else if (type.includes('zip') || type.includes('compressed')) {
-      return FileArchiveIcon;
+  // Allow dropping
+  const handleDragOver = (e) => {
+    e.preventDefault()
+  }
     } else {
       return FileIcon;
     }
@@ -668,7 +352,7 @@ const MainFeature = () => {
           size: file.size,
           type: file.type,
           data: URL.createObjectURL(file) // Create a blob URL for preview
-          id: `att-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        }));
         
         const updatedTasks = tasks.map(task => 
           task.id === selectedTask.id 
@@ -684,6 +368,42 @@ const MainFeature = () => {
     }, 200);
   }
 
+  // Handle task dropping into a column
+  const handleDrop = (columnId) => {
+    if (draggedTask && draggedTask.column !== columnId) {
+      const updatedTasks = tasks.map(task => 
+        task.id === draggedTask.id ? { ...task, column: columnId } : task
+      )
+      setTasks(updatedTasks)
+      toast.info(`Task moved to ${COLUMNS.find(col => col.id === columnId).title}`)
+    }
+    setDraggedTask(null)
+  }
+
+  // Format date to readable format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  }
+  
+  // Check if date is past due
+  const isPastDue = (dateString) => {
+    const dueDate = new Date(dateString)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return dueDate < today
+  }
+  
+  // Delete a task
+  const deleteTask = (taskId) => {
+    setTasks(tasks.filter(task => task.id !== taskId))
+    setSelectedTask(null)
+    toast.success("Task deleted successfully")
+  }
+
   // Delete attachment
   const deleteAttachment = (attachmentId) => {
     const updatedTasks = tasks.map(task => 
@@ -697,7 +417,6 @@ const MainFeature = () => {
     
     setTasks(updatedTasks);
     const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
-  
     setSelectedTask(updatedTask);
     toast.success("Attachment deleted successfully");
   }
@@ -717,6 +436,56 @@ const MainFeature = () => {
     setShowEmojiPicker(false);
   }
 
+  // Apply formatting to text
+  const applyFormatting = (type) => {
+    const input = commentInputRef.current.input
+    
+    if (!input) return
+    
+    const start = input.selectionStart
+    const end = input.selectionEnd
+    const text = newComment
+    
+    let formattedText = text
+    let newCursorPosition = end
+    
+    const selectedText = text.substring(start, end)
+    
+    switch (type) {
+      case 'bold':
+        formattedText = text.substring(0, start) + `**${selectedText}**` + text.substring(end)
+        newCursorPosition = end + 4
+        break
+      case 'italic':
+        formattedText = text.substring(0, start) + `_${selectedText}_` + text.substring(end)
+        newCursorPosition = end + 2
+        break
+      case 'list':
+        formattedText = text.substring(0, start) + `\n- ${selectedText}` + text.substring(end)
+        newCursorPosition = end + 3
+        break
+      case 'code':
+        formattedText = text.substring(0, start) + `\`${selectedText}\`` + text.substring(end)
+        newCursorPosition = end + 2
+        break
+      case 'link':
+        if (selectedText) {
+          formattedText = text.substring(0, start) + `[${selectedText}](url)` + text.substring(end)
+          newCursorPosition = end + 6
+        } else {
+          formattedText = text.substring(0, start) + `[link text](url)` + text.substring(end)
+          newCursorPosition = start + 11
+        }
+        break
+    }
+    
+    setNewComment(formattedText)
+    setTimeout(() => input.setSelectionRange(newCursorPosition, newCursorPosition), 0)
+  }
+  
+  // Common emojis for quick access
+  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
+  
   // Process text for display with formatting
   const processFormattedText = (text) => {
     if (!text) return '';
@@ -757,6 +526,88 @@ const MainFeature = () => {
     
     // Process mentions
     return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
+  
+  // Add a comment to a task
+  const addComment = (e) => {
+    e.preventDefault()
+    
+    if (!newComment.trim()) {
+      toast.error("Comment cannot be empty")
+      return
+    }
+    
+    const comment = {
+      id: `c-${Date.now()}`,
+      text: newComment,
+      name: 'You', // In a real app, this would be the current user
+      formatted: true, // Flag to indicate this comment uses formatting
+      avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+      timestamp: new Date().toISOString(),
+      replies: []
+    }
+    
+    const updatedTasks = tasks.map(task => 
+      task.id === selectedTask.id 
+        ? { ...task, comments: [...(task.comments || []), comment] } 
+        : task
+    )
+    
+    setTasks(updatedTasks)
+    setSelectedTask({...selectedTask, comments: [...(selectedTask.comments || []), comment]})
+    setNewComment('')
+    setFormattedComment('')
+    toast.success("Comment added successfully")
+  }
+  
+  // Add a reply to a comment
+  const addReply = (commentId) => {
+    if (!replyText.trim()) {
+      toast.error("Reply cannot be empty")
+      return
+    }
+    
+    const addReplyToComment = (comments) => {
+      return comments.map(comment => {
+        if (comment.id === commentId) {
+          const reply = {
+            id: `r-${Date.now()}`,
+            text: replyText,
+            formatted: true, // Flag to indicate this reply uses formatting
+            name: 'You', // In a real app, this would be the current user
+            avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+            timestamp: new Date().toISOString(),
+            replies: []
+          }
+          return { 
+            ...comment, 
+            replies: [...(comment.replies || []), reply] 
+          }
+        } else if (comment.replies && comment.replies.length > 0) {
+          return { 
+            ...comment, 
+            replies: addReplyToComment(comment.replies) 
+          }
+        }
+        return comment
+      })
+    }
+    
+    const updatedTasks = tasks.map(task => {
+      if (task.id === selectedTask.id) {
+        const updatedComments = addReplyToComment(task.comments || [])
+        return { ...task, comments: updatedComments }
+      }
+      return task
+    })
+    
+    setTasks(updatedTasks)
+    const updatedSelectedTask = updatedTasks.find(task => task.id === selectedTask.id)
+    setSelectedTask(updatedSelectedTask)
+    setReplyTo(null)
+    setFormattedReplyText('')
+    setReplyText('')
+    toast.success("Reply added successfully")
+  }
   };
   
   // Render a comment and its replies
