@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { formatDistanceToNow } from 'date-fns'
-import { getIcon } from '../utils/iconUtils' 
+import { getIcon } from '../utils/iconUtils'
+import linkify from 'linkify-it'
+import { MentionsInput, Mention } from 'react-mentions'
 import fileType from 'file-type-browser'
 
 // Task priority options
@@ -93,6 +95,13 @@ const MainFeature = () => {
   const FileArchiveIcon = getIcon('file-archive')
   const TrashIcon = getIcon('trash')
   const UploadIcon = getIcon('upload')
+  const BoldIcon = getIcon('bold')
+  const ItalicIcon = getIcon('italic')
+  const ListIcon = getIcon('list')
+  const LinkIcon = getIcon('link')
+  const AtSignIcon = getIcon('at-sign')
+  const CodeIcon = getIcon('code')
+  const SmileIcon = getIcon('smile')
   
   // State
   const [tasks, setTasks] = useState(() => {
@@ -115,16 +124,52 @@ const MainFeature = () => {
   const [draggedTask, setDraggedTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [newComment, setNewComment] = useState('')
+  const [formattedComment, setFormattedComment] = useState('')
   const [replyTo, setReplyTo] = useState(null)
   const [replyText, setReplyText] = useState('')
+  const [formattedReplyText, setFormattedReplyText] = useState('')
   const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   
   // Refs
   const commentInputRef = useRef(null)
+  const replyInputRef = useRef(null)
   const fileInputRef = useRef(null)
   const dragCounter = useRef(0)
+  const linkifyInstance = useRef(linkify())
+  
+  // Team members for mentions
+  const TEAM_MEMBERS = [
+    { id: 1, display: 'Alex Morgan' },
+    { id: 2, display: 'Morgan Chen' },
+    { id: 3, display: 'Jamie Wilson' },
+    { id: 4, display: 'Taylor Swift' },
+    { id: 5, display: 'Sam Johnson' }
+  ]
+  
+  // Custom style for mentions input
+  const mentionsInputStyle = {
+    control: {
+      backgroundColor: 'transparent',
+      fontSize: '0.875rem',
+      lineHeight: '1.25rem',
+    },
+    input: {
+      margin: 0,
+      padding: 0,
+      overflow: 'auto',
+      height: 'auto',
+    },
+    suggestions: {
+      list: {
+        backgroundColor: 'white',
+        border: '1px solid rgba(0,0,0,0.15)',
+        borderRadius: '0.375rem',
+      },
+    }
+  }
   const dropZoneRef = useRef(null)
   
   // Save tasks to localStorage
@@ -212,6 +257,53 @@ const MainFeature = () => {
     toast.success("Task deleted successfully")
   }
   
+  // Apply formatting to text
+  const applyFormatting = (type) => {
+    const input = commentInputRef.current.input
+    
+    if (!input) return
+    
+    const start = input.selectionStart
+    const end = input.selectionEnd
+    const text = newComment
+    
+    let formattedText = text
+    let newCursorPosition = end
+    
+    const selectedText = text.substring(start, end)
+    
+    switch (type) {
+      case 'bold':
+        formattedText = text.substring(0, start) + `**${selectedText}**` + text.substring(end)
+        newCursorPosition = end + 4
+        break
+      case 'italic':
+        formattedText = text.substring(0, start) + `_${selectedText}_` + text.substring(end)
+        newCursorPosition = end + 2
+        break
+      case 'list':
+        formattedText = text.substring(0, start) + `\n- ${selectedText}` + text.substring(end)
+        newCursorPosition = end + 3
+        break
+      case 'code':
+        formattedText = text.substring(0, start) + `\`${selectedText}\`` + text.substring(end)
+        newCursorPosition = end + 2
+        break
+      case 'link':
+        if (selectedText) {
+          formattedText = text.substring(0, start) + `[${selectedText}](url)` + text.substring(end)
+          newCursorPosition = end + 6
+        } else {
+          formattedText = text.substring(0, start) + `[link text](url)` + text.substring(end)
+          newCursorPosition = start + 11
+        }
+        break
+    }
+    
+    setNewComment(formattedText)
+    setTimeout(() => input.setSelectionRange(newCursorPosition, newCursorPosition), 0)
+  }
+  
   // Add a comment to a task
   const addComment = (e) => {
     e.preventDefault()
@@ -225,6 +317,7 @@ const MainFeature = () => {
       id: `c-${Date.now()}`,
       text: newComment,
       name: 'You', // In a real app, this would be the current user
+      formatted: true, // Flag to indicate this comment uses formatting
       avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
       timestamp: new Date().toISOString(),
       replies: []
@@ -239,6 +332,7 @@ const MainFeature = () => {
     setTasks(updatedTasks)
     setSelectedTask({...selectedTask, comments: [...(selectedTask.comments || []), comment]})
     setNewComment('')
+    setFormattedComment('')
     toast.success("Comment added successfully")
   }
   
@@ -255,6 +349,7 @@ const MainFeature = () => {
           const reply = {
             id: `r-${Date.now()}`,
             text: replyText,
+            formatted: true, // Flag to indicate this reply uses formatting
             name: 'You', // In a real app, this would be the current user
             avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
             timestamp: new Date().toISOString(),
@@ -289,6 +384,7 @@ const MainFeature = () => {
     setSelectedTask(updatedSelectedTask)
     
     setReplyTo(null)
+    setFormattedReplyText('')
     setReplyText('')
     toast.success("Reply added successfully")
   }
@@ -442,12 +538,71 @@ const MainFeature = () => {
     setTasks(updatedTasks);
     const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
     setSelectedTask(updatedTask);
+  // Process text for display with formatting
+  const processFormattedText = (text) => {
+    if (!text) return '';
+    
+    // Process markdown-like formatting
+    let processedText = text
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      // Code
+      .replace(/`(.*?)`/g, '<code class="bg-surface-100 dark:bg-surface-700 px-1 py-0.5 rounded text-xs">$1</code>')
+      // Lists
+      .replace(/^- (.*)/gm, '<li>$1</li>')
+      // Replace newlines with <br>
+      .replace(/\n/g, '<br />');
+    
+    // Find and replace links
+    const matches = linkifyInstance.current.match(processedText);
+    if (matches) {
+      let lastIdx = 0;
+      let result = '';
+      
+      matches.forEach(match => {
+        // Add text before the link
+        result += processedText.slice(lastIdx, match.index);
+        
+        // Add the link
+        result += `<a href="${match.url}" target="_blank" rel="noopener noreferrer">${match.text}</a>`;
+        
+        lastIdx = match.lastIndex;
+      });
+      
+      // Add remaining text
+      result += processedText.slice(lastIdx);
+      processedText = result;
+    }
+    
+    // Process mentions
+    processedText = processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
+    
+    return processedText;
+  };
+  
     toast.success("Attachment deleted successfully");
   }
   
   // Format relative time (e.g., "2 minutes ago")
   const formatRelativeTime = (dateString) => {
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+  // Add emoji to text
+  const addEmoji = (emoji) => {
+    setNewComment(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+  
+  // Common emojis for quick access
+  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
+  
+  // Handle emoji selection for replies
+  const addEmojiToReply = (emoji) => {
+    setReplyText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+  
+  // Render a comment and its replies with formatting
   }
   
   // Render a comment and its replies
@@ -468,8 +623,16 @@ const MainFeature = () => {
           </span>
         </div>
         
-        <div className="comment-body">
-          <p>{comment.text}</p>
+        <div className={`comment-body ${comment.formatted ? 'rich-text' : ''}`}>
+          {comment.formatted ? (
+            <div 
+              dangerouslySetInnerHTML={{ 
+                __html: processFormattedText(comment.text) 
+              }}
+            />
+          ) : (
+            <p>{comment.text}</p>
+          )}
         </div>
         
         <div className="comment-actions">
@@ -496,10 +659,31 @@ const MainFeature = () => {
                 Replying to {comment.name}
               </span>
             </div>
-            <div className="flex items-center">
-              <input
-                type="text"
-                placeholder="Write a reply..."
+              <MentionsInput
+                className="form-input text-sm py-1 flex-1"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write a reply... (use @ to mention)"
+                style={mentionsInputStyle}
+                inputRef={replyInputRef}
+              >
+                <Mention
+                  trigger="@"
+                  data={TEAM_MEMBERS}
+                  renderSuggestion={(suggestion, search, highlightedDisplay) => (
+                    <div className="flex items-center p-2 hover:bg-surface-100">
+                      <div className="w-6 h-6 rounded-full bg-primary-light flex items-center justify-center mr-2">
+                        {suggestion.display.charAt(0)}
+                      </div>
+                      <div className="text-sm">{highlightedDisplay}</div>
+                    </div>
+                  )}
+                />
+              </MentionsInput>
+              {/* Replaced input with MentionsInput 
+              <input 
+                type="text" 
+                placeholder="Write a reply..." 
                 className="form-input text-sm py-1 flex-1"
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
@@ -850,13 +1034,95 @@ const MainFeature = () => {
                 {/* Comment form */}
                 <form onSubmit={addComment} className="mb-4">
                   <div className="flex">
-                    <input
-                      type="text"
-                      placeholder="Add a comment..."
-                      className="form-input flex-1"
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
+                    <div className="flex-1 flex flex-col">
+                      <div className="formatting-toolbar">
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                          onClick={() => applyFormatting('bold')}
+                          title="Bold"
+                        >
+                          <BoldIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                          onClick={() => applyFormatting('italic')}
+                          title="Italic"
+                        >
+                          <ItalicIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                          onClick={() => applyFormatting('list')}
+                          title="Bullet List"
+                        >
+                          <ListIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                          onClick={() => applyFormatting('code')}
+                          title="Code"
+                        >
+                          <CodeIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                          onClick={() => applyFormatting('link')}
+                          title="Add Link"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                        </button>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            className="p-1 rounded hover:bg-surface-100 dark:hover:bg-surface-700"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            title="Add Emoji"
+                          >
+                            <SmileIcon className="w-4 h-4" />
+                          </button>
+                          {showEmojiPicker && (
+                            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-surface-700 shadow-lg rounded-lg p-2 flex flex-wrap gap-1 z-10">
+                              {commonEmojis.map(emoji => (
+                                <button
+                                  key={emoji}
+                                  type="button"
+                                  onClick={() => addEmoji(emoji)}
+                                  className="w-8 h-8 flex items-center justify-center hover:bg-surface-100 dark:hover:bg-surface-600 rounded"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <MentionsInput
+                        className="form-input"
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Add a comment... (use @ to mention)"
+                        style={mentionsInputStyle}
+                        inputRef={commentInputRef}
+                      >
+                        <Mention
+                          trigger="@"
+                          data={TEAM_MEMBERS}
+                          renderSuggestion={(suggestion, search, highlightedDisplay) => (
+                            <div className="flex items-center p-2 hover:bg-surface-100 dark:hover:bg-surface-700">
+                              <div className="w-6 h-6 rounded-full bg-primary-light dark:bg-primary-dark flex items-center justify-center mr-2">
+                                {suggestion.display.charAt(0)}
+                              </div>
+                              <div className="text-sm">{highlightedDisplay}</div>
+                            </div>
+                          )}
+                        />
+                      </MentionsInput>
+                    </div>
                     <button
                       type="submit"
                       className="btn btn-primary ml-2"

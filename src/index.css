@@ -111,6 +111,22 @@
     @apply text-sm text-surface-700 dark:text-surface-300 mb-2;
   }
   
+  .comment-body.rich-text {
+    @apply text-sm text-surface-700 dark:text-surface-300 mb-2 leading-relaxed;
+  }
+  
+  .comment-body.rich-text a {
+    @apply text-primary hover:underline;
+  }
+  
+  .comment-body.rich-text .mention {
+    @apply bg-primary-light bg-opacity-20 text-primary-dark dark:text-primary-light px-1 py-0.5 rounded-sm font-medium;
+  }
+  
+  .formatting-toolbar {
+    @apply flex flex-wrap gap-1 mb-2 border-b border-surface-200 dark:border-surface-700 pb-2;
+  }
+  
   .reply-form {
     @apply mt-2 mb-3;
   }
