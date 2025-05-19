@@ -126,29 +126,51 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </div>
           </div>
           
-          <nav className="space-y-1">
-            {['Dashboard', 'My Tasks', 'Calendar', 'Reports', 'Recent Projects'].map((item) => (
-              <div key={item} className="flex items-center">
-                <button
-                  onClick={() => handleNavigation(item)}
-                  className={`flex-grow text-left px-3 py-2 rounded-lg text-sm font-medium
-                    ${item === activePage
-                      ? 'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light'
-                      : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
-                >
-                  {item}
-                </button>
-                {item === activePage && 
-                    }`
-                  }
-                >
-                  {item}
-                </button>
-                
-                {/* Render NotificationBell outside of button for active page */}
-                {item === activePage && (
-                  <div className="ml-1">
-                  && <NotificationBell />}
+                <div key={item} className="mb-2 flex">
+                  {item === "Recent Projects" ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (item === "Home") navigate("/");
+                          else
+                            navigate(
+                              `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                            );
+                          setActiveMenuItem(item);
+                        }}
+                        className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
+                          item === activePage
+                            ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                        {item}
+                      </button>
+                      <NotificationBell />
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (item === "Home") navigate("/");
+                        else
+                          navigate(
+                            `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                          );
+                        setActiveMenuItem(item);
+                      }}
+                      className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
+                        item === activePage
+                          ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                      {item}
+                    </button>
+                  )}
+                </div>
+              ))}
               </div>
           
           <div className="mt-8">
