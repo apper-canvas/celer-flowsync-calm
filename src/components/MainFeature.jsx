@@ -610,7 +610,7 @@ const MainFeature = () => {
   
   
   // Render a comment and its replies
-  const renderComment = (comment, level = 0) => {
+  const renderComment = (comment, level = 0) => (
     return (
       <div key={comment.id} className={`comment ${level > 0 ? 'comment-reply' : ''}`}>
         <div className="comment-header">
@@ -662,64 +662,61 @@ const MainFeature = () => {
               <span className="text-xs text-surface-500 dark:text-surface-400">
                 Replying to {comment.name}
               </span>
-            </div>
-              <MentionsInput
-                className="form-input text-sm py-1 flex-1"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Write a reply... (use @ to mention)"
-                style={mentionsInputStyle}
-                inputRef={replyInputRef}
-              >
-                <Mention
-                  trigger="@"
-                  data={TEAM_MEMBERS}
-                  renderSuggestion={(suggestion, search, highlightedDisplay) => (
-                    <div className="flex items-center p-2 hover:bg-surface-100">
-                      <div className="w-6 h-6 rounded-full bg-primary-light flex items-center justify-center mr-2">
-                        {suggestion.display.charAt(0)}
-                      </div>
-                      <div className="text-sm">{highlightedDisplay}</div>
-                    </div>
-                  )}
-                />
-              </MentionsInput>
-              <div className="flex space-x-2 ml-2">
-                <button
-                  className="btn btn-sm btn-outline text-xs py-1"
-                  onClick={() => setReplyTo(null)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-sm btn-primary text-xs py-1 flex items-center"
-                  onClick={() => addReply(comment.id)}
-                >
-                  <SendIcon className="w-3 h-3 mr-1" />
-                  Send
-                </button>
-              </div>
-              {/* Replaced with MentionsInput above
-              <input
-                type="text" 
-                placeholder="Write a reply..." 
-                className="form-input text-sm py-1 flex-1"
-                value={replyText}
-                ref={commentInputRef} 
-              />
-              */}
-            </div>
-          </div>
-        )}
-        )}
-        
-        {comment.replies && comment.replies.length > 0 && (
-          <div className="replies">
+           <MentionsInput
+             className="form-input text-sm py-1 flex-1"
+             value={replyText}
+             onChange={(e) => setReplyText(e.target.value)}
+             placeholder="Write a reply... (use @ to mention)"
+             style={mentionsInputStyle}
+             inputRef={replyInputRef}
+           >
+             <Mention
+               trigger="@"
+               data={TEAM_MEMBERS}
+               renderSuggestion={(suggestion, search, highlightedDisplay) => (
+                 <div className="flex items-center p-2 hover:bg-surface-100">
+                   <div className="w-6 h-6 rounded-full bg-primary-light flex items-center justify-center mr-2">
+                     {suggestion.display.charAt(0)}
+                   </div>
+                   <div className="text-sm">{highlightedDisplay}</div>
+                 </div>
+               )}
+             />
+           </MentionsInput>
+           <div className="flex space-x-2 mt-2">
+             <button
+               className="btn btn-sm btn-outline text-xs py-1"
+               onClick={() => setReplyTo(null)}
+             >
+               Cancel
+             </button>
+             <button
+               className="btn btn-sm btn-primary text-xs py-1 flex items-center"
+               onClick={() => addReply(comment.id)}
+             >
+               <SendIcon className="w-3 h-3 mr-1" />
+               Send
+             </button>
             {comment.replies.map(reply => renderComment(reply, level + 1))}
+           {/* Replaced with MentionsInput above
+           <input
+             type="text" 
+             placeholder="Write a reply..." 
+             className="form-input text-sm py-1 flex-1"
+             value={replyText}
+             ref={commentInputRef} 
+           />
+           */}
+         </div>
+       )}
+       
+       {comment.replies && comment.replies.length > 0 && (
+         <div className="replies">
+           {comment.replies.map(reply => renderComment(reply, level + 1))}
           </div>
-        )}
-      </div>
-    )
+       )}
+     </div>
+  )
   }
   
   return (
