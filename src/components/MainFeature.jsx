@@ -70,6 +70,7 @@ const INITIAL_TASKS = [
     },
     comments: [],
     priority: 'low',
+    dueDate: new Date(Date.now() - 86400000 * 1).toISOString(),
     attachments: []
   }
 ]

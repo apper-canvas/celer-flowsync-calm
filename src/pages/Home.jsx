@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { getIcon } from '../utils/iconUtils'
 import MainFeature from '../components/MainFeature'
+import Dashboard from './Dashboard'
 
-const Home = ({ toggleDarkMode, isDarkMode }) => {
+const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
   const MoonIcon = getIcon('moon')
   const SunIcon = getIcon('sun')
   const LogOutIcon = getIcon('log-out')
   const UsersIcon = getIcon('users')
+  
+  const navigate = useNavigate()
+  const location = useLocation()
   
   // Mock user data
   const [currentUser] = useState({
@@ -22,6 +27,11 @@ const Home = ({ toggleDarkMode, isDarkMode }) => {
     name: 'Product Development',
     members: 8
   })
+
+  // Handle navigation
+  const handleNavigation = (page) => {
+    navigate(page === 'Dashboard' ? '/dashboard' : '/')
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -106,11 +116,13 @@ const Home = ({ toggleDarkMode, isDarkMode }) => {
             {['Dashboard', 'My Tasks', 'Calendar', 'Reports'].map((item) => (
               <button
                 key={item}
+                onClick={() => handleNavigation(item)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium
-                  ${item === 'My Tasks' ? 
+                  ${item === activePage ? 
                     'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light' : 
                     'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
-                  }`}
+                  }`
+                }
               >
                 {item}
               </button>
@@ -137,11 +149,15 @@ const Home = ({ toggleDarkMode, isDarkMode }) => {
         {/* Main Feature (Kanban Board) */}
         <main className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-surface-900 dark:text-white mb-1">My Tasks</h1>
-            <p className="text-surface-500 dark:text-surface-400">Manage and organize your tasks effectively</p>
+            <h1 className="text-2xl font-bold text-surface-900 dark:text-white mb-1">{activePage}</h1>
+            <p className="text-surface-500 dark:text-surface-400">
+              {activePage === 'Dashboard' 
+                ? 'Overview of project progress and team performance' 
+                : 'Manage and organize your tasks effectively'}
+            </p>
           </div>
           
-          <MainFeature />
+          {activePage === 'Dashboard' ? <Dashboard /> : <MainFeature />}
         </main>
       </div>
     </div>

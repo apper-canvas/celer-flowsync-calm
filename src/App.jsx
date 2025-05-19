@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { getIcon } from './utils/iconUtils'
 import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
       <div className="min-h-screen">
         <Routes>
           <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />} />
+          <Route path="/dashboard" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Dashboard" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

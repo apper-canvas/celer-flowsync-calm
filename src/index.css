@@ -132,7 +132,7 @@
     @apply flex items-center bg-surface-50 dark:bg-surface-700 rounded-lg p-2 mb-2 relative;
   }
   
-  .attachment-card.group {
+  .attachment-card {
     /* The group class should be added directly in HTML, not via @apply */
   }
 
@@ -166,6 +166,39 @@
 
   .upload-progress {
     @apply h-1 bg-primary rounded-full mt-1;
+  }
+  
+  /* Dashboard styles */
+  .stats-card {
+    @apply bg-white dark:bg-surface-800 rounded-xl shadow-card p-4 flex flex-col h-full;
+  }
+  
+  .stats-card-title {
+    @apply text-sm font-medium text-surface-500 dark:text-surface-400 mb-1;
+  }
+  
+  .stats-card-value {
+    @apply text-2xl font-bold;
+  }
+  
+  .stats-card-description {
+    @apply text-xs text-surface-500 dark:text-surface-400 mt-1;
+  }
+  
+  .stats-card-trend {
+    @apply flex items-center text-xs mt-2;
+  }
+  
+  .stats-card-trend-up {
+    @apply text-green-600 dark:text-green-400;
+  }
+  
+  .stats-card-trend-down {
+    @apply text-red-600 dark:text-red-400;
+  }
+  
+  .chart-container {
+    @apply bg-white dark:bg-surface-800 rounded-xl shadow-card p-4 h-full;
   }
 }
 
