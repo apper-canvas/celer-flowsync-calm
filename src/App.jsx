@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import NotFound from './pages/NotFound'
 
+import RecentProjects from './pages/RecentProjects'
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -33,6 +34,7 @@ function App() {
   return (
     <>
       <div className="min-h-screen">
+            <Route path="/recent-projects" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Recent Projects" />} />
         <Routes>
           <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />} />
           <Route path="/dashboard" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Dashboard" />} />

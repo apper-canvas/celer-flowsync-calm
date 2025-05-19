@@ -6,6 +6,7 @@ import { getIcon } from '../utils/iconUtils'
 import MainFeature from '../components/MainFeature'
 import Dashboard from './Dashboard'
 import Calendar from './Calendar'
+import RecentProjects from './RecentProjects'
 import Reports from './Reports'
 
 const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
@@ -34,6 +35,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
   const handleNavigation = (page) => {
     if (page === 'Dashboard') {
       navigate('/dashboard')
+    } else if (page === 'Recent Projects') {
+      navigate('/recent-projects')
     } else if (page === 'Calendar') {
       navigate('/calendar')
     } else if (page === 'Reports') {
@@ -123,7 +126,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
           </div>
           
           <nav className="space-y-1">
-            {['Dashboard', 'My Tasks', 'Calendar', 'Reports'].map((item) => (
+            {['Dashboard', 'My Tasks', 'Calendar', 'Reports', 'Recent Projects'].map((item) => (
               <button
                 key={item}
                 onClick={() => handleNavigation(item)}
@@ -144,13 +147,18 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
               Recent Projects
             </h2>
             <div className="space-y-2">
-              {['Website Redesign', 'Mobile App Launch', 'Q3 Planning'].map((project) => (
+              {['Website Redesign', 'Mobile App Launch', 'Q3 Planning'].map((project, index) => (
                 <button
                   key={project}
+                  onClick={() => {
+                    handleNavigation('Recent Projects');
+                    toast.info(`Navigating to ${project} project details`);
+                  }}
                   className="w-full text-left px-3 py-2 rounded-lg text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 truncate"
                 >
                   {project}
                 </button>
+                
               ))}
             </div>
           </div>
@@ -175,6 +183,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <Calendar />
           ) : activePage === 'Reports' ? (
             <Reports />
+          ) : activePage === 'Recent Projects' ? (
+            <RecentProjects />
           ) : (
             <MainFeature />
           )}
