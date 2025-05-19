@@ -135,6 +135,10 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                     ${item === activePage
                       ? 'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light'
                       : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
+                >
+                  {item}
+                </button>
+                {item === activePage && 
                     }`
                   }
                 >
@@ -144,13 +148,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                 {/* Render NotificationBell outside of button for active page */}
                 {item === activePage && (
                   <div className="ml-1">
-                    <NotificationBell />
-                  </div>
-                )}
+                  && <NotificationBell />}
               </div>
-              </button>
-            ))}
-          </nav>
           
           <div className="mt-8">
             <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
