@@ -6,8 +6,9 @@ import { getIcon } from './utils/iconUtils'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import NotFound from './pages/NotFound'
-
 import RecentProjects from './pages/RecentProjects'
+import { NotificationProvider } from './context/NotificationContext'
+
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -32,30 +33,32 @@ function App() {
   }
 
   return (
-    <>
-      <div className="min-h-screen">
-        <Routes>
-          <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />} />
-          <Route path="/dashboard" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Dashboard" />} />
-          <Route path="/recent-projects" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Recent Projects" />} />
-          <Route path="/calendar" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Calendar" />} />
-          <Route path="/reports" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Reports" />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-      <ToastContainer
-        position="bottom-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={isDarkMode ? "dark" : "light"}
-      />
-    </>
+    <NotificationProvider>
+      <>
+        <div className="min-h-screen">
+          <Routes>
+            <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />} />
+            <Route path="/dashboard" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Dashboard" />} />
+            <Route path="/recent-projects" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Recent Projects" />} />
+            <Route path="/calendar" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Calendar" />} />
+            <Route path="/reports" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Reports" />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <ToastContainer
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme={isDarkMode ? "dark" : "light"}
+        />
+      </>
+    </NotificationProvider>
   )
 }
 

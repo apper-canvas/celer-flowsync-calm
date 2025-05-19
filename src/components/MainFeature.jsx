@@ -6,6 +6,8 @@ import { getIcon } from '../utils/iconUtils'
 import linkify from 'linkify-it'
 import { MentionsInput, Mention } from 'react-mentions'
 import fileType from 'file-type-browser'
+import { useNotifications } from '../context/NotificationContext'
+import { createTaskAssignedNotification, createTaskUpdatedNotification } from '../utils/notificationUtils'
 
 // Task priority options
 const PRIORITY_OPTIONS = [
@@ -78,6 +80,10 @@ const INITIAL_TASKS = [
 ]
 
 // Format relative time (e.g., "2 minutes ago")
+const currentUser = {
+  id: '1',
+  name: 'Alex Morgan'
+};
 const formatRelativeTime = (dateString) => {
   if (!dateString) return '';
   try {
@@ -96,6 +102,9 @@ const MainFeature = () => {
   const dragCounter = useRef(0)
   const linkifyInstance = useRef(linkify())
   const dropZoneRef = useRef(null)
+  
+  // Get notification context
+  const { addNotification } = useNotifications();
   
   // Icons
   const PlusIcon = getIcon('plus')
@@ -194,6 +203,11 @@ const MainFeature = () => {
     })
     setIsAddingTask(false)
     toast.success("Task created successfully")
+    
+    // Send notification if task is assigned to someone other than creator
+    if (task.assignee.id !== currentUser.id) {
+      addNotification(createTaskAssignedNotification(task, task.assignee));
+    }
   }
   
   // Team members for mentions
@@ -379,6 +393,13 @@ const MainFeature = () => {
         task.id === draggedTask.id ? { ...task, column: columnId } : task
       )
       setTasks(updatedTasks)
+      
+      // Send notification for task update if it's assigned to someone other than current user
+      const updatedTask = updatedTasks.find(t => t.id === draggedTask.id);
+      if (updatedTask && updatedTask.assignee && updatedTask.assignee.id !== currentUser.id) {
+        addNotification(createTaskUpdatedNotification(updatedTask));
+      }
+      
       toast.info(`Task moved to ${COLUMNS.find(col => col.id === columnId).title}`)
     }
     setDraggedTask(null)
@@ -404,6 +425,7 @@ const MainFeature = () => {
   // Delete a task
   const deleteTask = (taskId) => {
     setTasks(tasks.filter(task => task.id !== taskId))
+    // No notification needed for deletion as the task no longer exists
     setSelectedTask(null)
     toast.success("Task deleted successfully")
   }
@@ -552,10 +574,16 @@ const MainFeature = () => {
     )
     
     setTasks(updatedTasks)
-    setSelectedTask({...selectedTask, comments: [...(selectedTask.comments || []), comment]})
+    const updatedSelectedTask = {...selectedTask, comments: [...(selectedTask.comments || []), comment]};
+    setSelectedTask(updatedSelectedTask)
     setNewComment('')
     setFormattedComment('')
     toast.success("Comment added successfully")
+    
+    // Notify assignee if they're different from the commenter
+    if (updatedSelectedTask.assignee && updatedSelectedTask.assignee.id !== currentUser.id) {
+      addNotification(createTaskUpdatedNotification(updatedSelectedTask));
+    }
   }
   
   // Add a reply to a comment
@@ -606,6 +634,12 @@ const MainFeature = () => {
     setFormattedReplyText('')
     setReplyText('')
     toast.success("Reply added successfully")
+    
+    // Notify assignee if they're different from the current user
+    const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
+    if (updatedTask.assignee && updatedTask.assignee.id !== currentUser.id) {
+      addNotification(createTaskUpdatedNotification(updatedTask));
+    }
   }
   
   // Render a comment and its replies
@@ -1238,6 +1272,11 @@ const MainFeature = () => {
                       )
                       setTasks(updatedTasks)
                       setSelectedTask(null)
+                      
+                      // Send notification if the task is assigned to someone else
+                      const completedTask = updatedTasks.find(t => t.id === selectedTask.id);
+                      if (completedTask.assignee && completedTask.assignee.id !== currentUser.id)
+                        addNotification(createTaskUpdatedNotification(completedTask));
                       toast.success("Task marked as complete")
                     }}
                     className="btn btn-primary flex items-center space-x-2"
@@ -1252,6 +1291,11 @@ const MainFeature = () => {
                         task.id === selectedTask.id ? { ...task, column: 'in-progress' } : task
                       )
                       setTasks(updatedTasks)
+                      
+                      // Send notification if the task is assigned to someone else
+                      const reopenedTask = updatedTasks.find(t => t.id === selectedTask.id);
+                      if (reopenedTask.assignee && reopenedTask.assignee.id !== currentUser.id)
+                        addNotification(createTaskUpdatedNotification(reopenedTask));
                       setSelectedTask(null)
                       toast.info("Task moved to In Progress")
                     }}
