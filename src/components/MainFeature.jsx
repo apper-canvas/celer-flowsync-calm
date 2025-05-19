@@ -69,9 +69,8 @@ const INITIAL_TASKS = [
       avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
     },
     comments: [],
-    dueDate: new Date(Date.now() - 86400000 * 1).toISOString(),
+    priority: 'low',
     attachments: []
-    dueDate: new Date(Date.now() - 86400000 * 1).toISOString()
   }
 ]
 
@@ -334,12 +333,12 @@ const MainFeature = () => {
     }
   }
 
-  const handleDragOver = (e) => {
+  const handleFileDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
   }
 
-  const handleDrop = (e) => {
+  const handleFileDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDraggingFile(false);
@@ -926,8 +925,8 @@ const MainFeature = () => {
                   className={`attachment-dropzone ${isDraggingFile ? 'attachment-dropzone-active' : ''}`}
                   onDragEnter={handleDragIn}
                   onDragLeave={handleDragOut}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
+                  onDragOver={handleFileDragOver}
+                  onDrop={handleFileDrop}
                 >
                   <input 
                     type="file" 
