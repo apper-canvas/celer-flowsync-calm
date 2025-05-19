@@ -172,7 +172,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                 </div>
               );
             })}
-            
+            </div>
           </div>
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
