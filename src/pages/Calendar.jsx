@@ -1,27 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Calendar as BigCalendar, Views, momentLocalizer } from 'react-big-calendar'
+import moment from 'moment'
 import { format, parseISO, addDays, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, isSameDay } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 import { toast } from 'react-toastify'
 import { getIcon } from '../utils/iconUtils'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
-// Create a localizer using date-fns
-const localizer = {
-  format: (date, format) => format(date, format, { locale: enUS }),
-  parse: (str) => new Date(str),
-  startOfWeek: (date) => startOfWeek(date, { locale: enUS }),
-  getWeekdays: () => Array.from({ length: 7 }, (_, i) => format(addDays(startOfWeek(new Date()), i), 'EEEEEE')),
-  formats: {
-    dateFormat: 'dd',
-    dayFormat: 'dd eee',
-    monthHeaderFormat: 'MMMM yyyy',
-    weekdayFormat: 'EEEEEE',
-    dayHeaderFormat: 'cccc MMM d',
-    dayRangeHeaderFormat: ({ start, end }) => `${format(start, 'MMMM dd')} - ${format(end, 'MMMM dd')}`,
-    timeGutterFormat: 'HH:mm',
-  },
-}
+// Create a proper localizer using moment
+const localizer = momentLocalizer(moment)
 
 const Calendar = () => {
   // Icons
@@ -211,63 +198,68 @@ const Calendar = () => {
               <div className="flex items-center">
                 <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
                 <span className="text-sm font-medium">Status:</span>
-            </div>
-            <select 
-              className="form-input text-sm py-1 px-2"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="all">All</option>
-              <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="done">Done</option>
-            </select>
-          </div>
-            
-          <div className="flex items-center gap-2 ml-4">
-            <div className="flex items-center">
-              <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
-              <span className="text-sm font-medium">Date Range:</span>
-            </div>
-            <div className="flex items-center">
-              <input 
-                type="date" 
-                className="form-input text-sm py-1 px-2" 
-                value={format(dateRangeFilter.start, 'yyyy-MM-dd')}
-                onChange={(e) => {
-                  const newStart = e.target.value ? new Date(e.target.value) : subDays(new Date(), 30);
-                  setDateRangeFilter(prev => ({ ...prev, start: newStart }));
-                }}
-              />
-              <span className="text-sm mx-1">to</span>
-              <input 
-                type="date" 
+              </div>
+              <select 
                 className="form-input text-sm py-1 px-2"
-                value={format(dateRangeFilter.end, 'yyyy-MM-dd')}
-                onChange={(e) => {
-                  const newEnd = e.target.value ? new Date(e.target.value) : addDays(new Date(), 60);
-                  setDateRangeFilter(prev => ({ ...prev, end: newEnd }));
-                }}
-              />
-            </div>
-            
-              <button
-                className="text-sm text-primary hover:text-primary-dark ml-2"
-                onClick={() => {
-                  setDateRangeFilter({
-                    start: subDays(new Date(), 30),
-                    end: addDays(new Date(), 60)
-                  });
-                  setStatusFilter('all');
-                  setPriorityFilter('all');
-                }}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
               >
-                Reset Filters
-              </button>
+                <option value="all">All</option>
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
             </div>
-            
+
+            <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center">
+                <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
+                <span className="text-sm font-medium">Date Range:</span>
+              </div>
+              <div className="flex items-center">
+                <input 
+                  type="date" 
+                  className="form-input text-sm py-1 px-2" 
+                  value={format(dateRangeFilter.start, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    const newStart = e.target.value ? new Date(e.target.value) : subDays(new Date(), 30);
+                    setDateRangeFilter(prev => ({ ...prev, start: newStart }));
+                  }}
+                />
+                <span className="text-sm mx-1">to</span>
+                <input 
+                  type="date" 
+                  className="form-input text-sm py-1 px-2"
+                  value={format(dateRangeFilter.end, 'yyyy-MM-dd')}
+                  onChange={(e) => {
+                    const newEnd = e.target.value ? new Date(e.target.value) : addDays(new Date(), 60);
+                    setDateRangeFilter(prev => ({ ...prev, end: newEnd }));
+                  }}
+                />
+              </div>
+              
+              <div>
+                <button
+                  className="text-sm text-primary hover:text-primary-dark ml-2"
+                  onClick={() => {
+                    setDateRangeFilter({
+                      start: subDays(new Date(), 30),
+                      end: addDays(new Date(), 60)
+                    });
+                    setStatusFilter('all');
+                    setPriorityFilter('all');
+                  }}
+                >
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Priority:</span>
+              <div className="flex items-center">
+                <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
+                <span className="text-sm font-medium">Priority:</span>
+              </div>
               <select 
                 className="form-input text-sm py-1 px-2"
                 value={priorityFilter}
