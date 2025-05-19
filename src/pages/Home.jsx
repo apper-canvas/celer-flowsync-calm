@@ -142,8 +142,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </h2>
             <div className="space-y-2">
               {navigationItems.map((item) => (
-                <div key={item} className="mb-2">
-                  <div className="flex items-center">
+                <div key={item} className="mb-2 flex items-center">
                     <button
                       onClick={() => {
                         if (item === "Home") navigate("/");
@@ -165,18 +164,15 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                       {item}
                     </button>
                     
-                    {/* Place NotificationBell as a sibling, not child of button */}
                     {item === "Recent Projects" && (
                       <div className="ml-2">
                         <NotificationBell />
                       </div>
                     )}
-                  </div>
                 </div>
               ))}
             </div>
           </div>
-          
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
           <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
             Recent Projects
