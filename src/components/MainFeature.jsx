@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { formatDistanceToNow } from 'date-fns'
 import { getIcon } from '../utils/iconUtils' 
-import { fileTypeFromBuffer } from 'file-type-browser'
+import fileType from 'file-type-browser'
 
 // Task priority options
 const PRIORITY_OPTIONS = [
@@ -382,10 +382,10 @@ const MainFeature = () => {
       
       // Validate file type using file-type-browser
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = new Uint8Array(arrayBuffer);
-      const fileType = await fileTypeFromBuffer(buffer);
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const fileTypeResult = fileType(uint8Array);
       
-      const mimeType = fileType ? fileType.mime : file.type;
+      const mimeType = fileTypeResult ? fileTypeResult.mime : file.type;
       
       if (!allowedTypes.includes(mimeType)) {
         toast.error(`File type ${mimeType} is not supported.`);
