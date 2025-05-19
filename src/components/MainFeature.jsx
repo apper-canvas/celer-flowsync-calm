@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
 import { formatDistanceToNow } from 'date-fns'
@@ -537,7 +537,35 @@ const MainFeature = () => {
     
     setTasks(updatedTasks);
     const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
-    setSelectedTask(updatedTask);
+  
+    toast.success("Attachment deleted successfully");
+  }
+  
+  // Format relative time (e.g., "2 minutes ago")
+    if (!dateString) return '';
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'some time ago';
+    }
+  }
+  
+  const formatRelativeTime = (dateString) => {
+  // Add emoji to text
+  const addEmoji = (emoji) => {
+    setNewComment(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+  // Common emojis for quick access
+  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
+  
+  // Handle emoji selection for replies
+  const addEmojiToReply = (emoji) => {
+    setReplyText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+
   // Process text for display with formatting
   const processFormattedText = (text) => {
     if (!text) return '';
@@ -577,33 +605,9 @@ const MainFeature = () => {
     }
     
     // Process mentions
-    processedText = processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
-    
-    return processedText;
+    return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
   };
   
-    toast.success("Attachment deleted successfully");
-  }
-  
-  // Format relative time (e.g., "2 minutes ago")
-  const formatRelativeTime = (dateString) => {
-  // Add emoji to text
-  const addEmoji = (emoji) => {
-    setNewComment(prev => prev + emoji);
-    setShowEmojiPicker(false);
-  }
-  
-  // Common emojis for quick access
-  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
-  
-  // Handle emoji selection for replies
-  const addEmojiToReply = (emoji) => {
-    setReplyText(prev => prev + emoji);
-    setShowEmojiPicker(false);
-  }
-  
-  // Render a comment and its replies with formatting
-  }
   
   // Render a comment and its replies
   const renderComment = (comment, level = 0) => {
@@ -679,16 +683,6 @@ const MainFeature = () => {
                     </div>
                   )}
                 />
-              </MentionsInput>
-              {/* Replaced input with MentionsInput 
-              <input 
-                type="text" 
-                placeholder="Write a reply..." 
-                className="form-input text-sm py-1 flex-1"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                ref={commentInputRef}
-              />
               <div className="flex space-x-2 ml-2">
                 <button
                   className="btn btn-sm btn-outline text-xs py-1"
@@ -702,6 +696,16 @@ const MainFeature = () => {
                 >
                   <SendIcon className="w-3 h-3 mr-1" />
                   Send
+                </button>
+              </div>
+              {/* Replaced with MentionsInput above
+              <input
+              <input 
+                type="text" 
+                placeholder="Write a reply..." 
+                className="form-input text-sm py-1 flex-1"
+                value={replyText}
+                ref={commentInputRef} 
                 </button>
               </div>
             </div>
