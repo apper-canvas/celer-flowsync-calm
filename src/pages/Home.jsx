@@ -141,37 +141,40 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
               Navigation
             </h2>
             <div className="space-y-2">
-              {navigationItems.map((item) => (
-                <div key={item} className="mb-2">
-                  <div className="flex items-center w-full space-x-2">
-                    <button
-                      onClick={() => {
-                        if (item === "Home") navigate("/");
-                        else
-                          navigate(
-                            `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                          );
-                        setActiveMenuItem(item);
-                      }}
-                      className={`flex items-center flex-grow py-2 px-4 rounded-md text-left ${
-                        item === activePage
-                          ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                      {item}
-                    </button>                    
+              {navigationItems.map((item) => {
+                return (
+                  <div key={item} className="mb-2">
+                    <div className="flex items-center w-full space-x-2">
+                      <button
+                        onClick={() => {
+                          if (item === "Home") navigate("/");
+                          else
+                            navigate(
+                              `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                            );
+                          setActiveMenuItem(item);
+                        }}
+                        className={`flex items-center flex-grow py-2 px-4 rounded-md text-left ${
+                          item === activePage
+                            ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                        {item}
+                      </button>
+                      
+                      {/* Render NotificationBell as a sibling, not a child of the button */}
                     {item === "Recent Projects" && (
                       <NotificationBell />
                     )}
                   </div>
                 </div>
               ))}
-            </div>
+              })}
           </div>
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
-        </aside>
+          <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
 
         {/* Main Feature (Kanban Board) */}
         <main className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col">
