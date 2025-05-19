@@ -6,6 +6,7 @@ import { getIcon } from '../utils/iconUtils'
 import MainFeature from '../components/MainFeature'
 import Dashboard from './Dashboard'
 import Calendar from './Calendar'
+import Reports from './Reports'
 
 const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
   const MoonIcon = getIcon('moon')
@@ -35,6 +36,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
       navigate('/dashboard')
     } else if (page === 'Calendar') {
       navigate('/calendar')
+    } else if (page === 'Reports') {
+      navigate('/reports')
     } else {
       navigate('/')
     }
@@ -160,7 +163,9 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <p className="text-surface-500 dark:text-surface-400">
               {activePage === 'Dashboard' 
                 ? 'Overview of project progress and team performance' 
-                : 'Manage and organize your tasks effectively'}
+                : activePage === 'Reports'
+                  ? 'Detailed analytics and performance reports'
+                  : 'Manage and organize your tasks effectively'}
             </p>
           </div>
           
@@ -168,6 +173,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <Dashboard />
           ) : activePage === 'Calendar' ? (
             <Calendar />
+          ) : activePage === 'Reports' ? (
+            <Reports />
           ) : (
             <MainFeature />
           )}

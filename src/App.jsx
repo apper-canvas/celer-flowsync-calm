@@ -37,6 +37,7 @@ function App() {
           <Route path="/" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />} />
           <Route path="/dashboard" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Dashboard" />} />
           <Route path="/calendar" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Calendar" />} />
+          <Route path="/reports" element={<Home toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} activePage="Reports" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
