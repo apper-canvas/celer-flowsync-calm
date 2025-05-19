@@ -77,6 +77,17 @@ const INITIAL_TASKS = [
   }
 ]
 
+// Format relative time (e.g., "2 minutes ago")
+const formatRelativeTime = (dateString) => {
+  if (!dateString) return '';
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'some time ago';
+  }
+}
+
 const MainFeature = () => {
   // Icons
   const PlusIcon = getIcon('plus')
@@ -541,25 +552,13 @@ const MainFeature = () => {
     setSelectedTask(updatedTask);
     toast.success("Attachment deleted successfully");
   }
-  
-}
 
-// Format relative time (e.g., "2 minutes ago")
-const formatRelativeTime = (dateString) => {
-  if (!dateString) return '';
-  try {
-    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return 'some time ago';
-    }
-  }
-  
   // Add emoji to text
   const addEmoji = (emoji) => {
     setNewComment(prev => prev + emoji);
     setShowEmojiPicker(false);
   }
+  
   // Common emojis for quick access
   const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
   
@@ -610,7 +609,6 @@ const formatRelativeTime = (dateString) => {
     // Process mentions
     return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
   };
-  
   
   // Render a comment and its replies
   const renderComment = (comment, level = 0) => {
@@ -702,15 +700,6 @@ const formatRelativeTime = (dateString) => {
                 Send
               </button>
             </div>
-            {/* Replaced with MentionsInput above
-            <input
-              type="text" 
-              placeholder="Write a reply..." 
-              className="form-input text-sm py-1 flex-1"
-              value={replyText}
-              ref={commentInputRef} 
-            />
-            */}
           </div>
         )}
         
@@ -722,7 +711,6 @@ const formatRelativeTime = (dateString) => {
       </div>
     );
   }
-  
   return (
     <div className="flex-1 flex flex-col">
       {/* Header with add button */}
