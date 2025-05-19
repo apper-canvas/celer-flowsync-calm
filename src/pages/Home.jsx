@@ -19,6 +19,16 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
   const navigate = useNavigate()
   const location = useLocation()
   
+  // Navigation items
+  const navigationItems = [
+    "Dashboard",
+    "My Tasks",
+    "Recent Projects",
+    "Calendar",
+    "Reports"
+  ]
+  const [activeMenuItem, setActiveMenuItem] = useState(activePage)
+  
   // Mock user data
   const [currentUser] = useState({
     name: 'Alex Morgan',
@@ -125,52 +135,45 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
               <span className="text-xs text-surface-500 dark:text-surface-400">{workspace.members}</span>
             </div>
           </div>
-          
-                <div key={item} className="mb-2 flex">
-                  {item === "Recent Projects" ? (
-                    <>
-                      <button
-                        onClick={() => {
-                          if (item === "Home") navigate("/");
-                          else
-                            navigate(
-                              `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                            );
-                          setActiveMenuItem(item);
-                        }}
-                        className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
-                          item === activePage
-                            ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                        {item}
-                      </button>
+
+          <div className="mb-6">
+            <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
+              Navigation
+            </h2>
+            <div className="space-y-2">
+              {navigationItems.map((item) => (
+                <div key={item} className="mb-2 flex items-center">
+                  <button
+                    onClick={() => {
+                      if (item === "Home") navigate("/");
+                      else
+                        navigate(
+                          `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                        );
+                      setActiveMenuItem(item);
+                    }}
+                    className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
+                      item === activePage
+                        ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                    {item}
+                  </button>
+                  
+                  {item === "Recent Projects" && (
+                    <div className="ml-2">
                       <NotificationBell />
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        if (item === "Home") navigate("/");
-                        else
-                          navigate(
-                            `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                          );
-                        setActiveMenuItem(item);
-                      }}
-                      className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
-                        item === activePage
-                          ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                      {item}
-                    </button>
+                    </div>
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
+        
               </div>
           
           <div className="mt-8">
