@@ -132,13 +132,16 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                 key={item}
                 onClick={() => handleNavigation(item)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium
-                  ${item === activePage ? 
-              <NotificationBell />
-                    'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light' : 
-                    'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
+                  ${item === activePage
+                    ? 'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light'
+                    : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
                   }`
                 }
               >
+                {item}
+                {item === activePage && 
+                  <NotificationBell />
+                }
                 {item}
               </button>
             ))}
