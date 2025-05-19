@@ -542,6 +542,7 @@ const MainFeature = () => {
   }
   
   // Format relative time (e.g., "2 minutes ago")
+  const formatRelativeTime = (dateString) => {
     if (!dateString) return '';
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
@@ -551,7 +552,6 @@ const MainFeature = () => {
     }
   }
   
-  const formatRelativeTime = (dateString) => {
   // Add emoji to text
   const addEmoji = (emoji) => {
     setNewComment(prev => prev + emoji);
@@ -683,6 +683,7 @@ const MainFeature = () => {
                     </div>
                   )}
                 />
+              </MentionsInput>
               <div className="flex space-x-2 ml-2">
                 <button
                   className="btn btn-sm btn-outline text-xs py-1"
@@ -700,16 +701,16 @@ const MainFeature = () => {
               </div>
               {/* Replaced with MentionsInput above
               <input
-              <input 
                 type="text" 
                 placeholder="Write a reply..." 
                 className="form-input text-sm py-1 flex-1"
                 value={replyText}
                 ref={commentInputRef} 
-                </button>
-              </div>
+              />
+              */}
             </div>
           </div>
+        )}
         )}
         
         {comment.replies && comment.replies.length > 0 && (
