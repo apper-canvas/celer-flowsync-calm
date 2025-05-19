@@ -128,21 +128,26 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
           
           <nav className="space-y-1">
             {['Dashboard', 'My Tasks', 'Calendar', 'Reports', 'Recent Projects'].map((item) => (
-              <button
-                key={item}
-                onClick={() => handleNavigation(item)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium
-                  ${item === activePage
-                    ? 'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light'
-                    : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
-                  }`
-                }
-              >
-                {item}
-                {item === activePage && 
-                  <NotificationBell />
-                }
-                {item}
+              <div key={item} className="flex items-center">
+                <button
+                  onClick={() => handleNavigation(item)}
+                  className={`flex-grow text-left px-3 py-2 rounded-lg text-sm font-medium
+                    ${item === activePage
+                      ? 'bg-primary-light bg-opacity-15 text-primary-dark dark:text-primary-light'
+                      : 'text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700'
+                    }`
+                  }
+                >
+                  {item}
+                </button>
+                
+                {/* Render NotificationBell outside of button for active page */}
+                {item === activePage && (
+                  <div className="ml-1">
+                    <NotificationBell />
+                  </div>
+                )}
+              </div>
               </button>
             ))}
           </nav>
