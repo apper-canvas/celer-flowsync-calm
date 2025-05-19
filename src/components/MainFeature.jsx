@@ -6,6 +6,7 @@ import { getIcon } from '../utils/iconUtils'
 import linkify from 'linkify-it'
 import { MentionsInput, Mention } from 'react-mentions'
 import fileType from 'file-type-browser'
+import fileType from 'file-type-browser'
 
 // Task priority options
 const PRIORITY_OPTIONS = [
@@ -42,6 +43,7 @@ const INITIAL_TASKS = [
       replies: []
     }],
     priority: 'medium',
+    attachments: []
     dueDate: new Date(Date.now() + 86400000 * 3).toISOString(),
     attachments: []
   },
@@ -57,6 +59,7 @@ const INITIAL_TASKS = [
     },
     comments: [],
     priority: 'high',
+    attachments: []
     dueDate: new Date(Date.now() + 86400000 * 1).toISOString(),
     attachments: []
   },
@@ -72,6 +75,7 @@ const INITIAL_TASKS = [
     },
     comments: [],
     priority: 'low',
+    attachments: []
     dueDate: new Date(Date.now() - 86400000 * 1).toISOString(),
     attachments: []
   }
@@ -95,9 +99,20 @@ const MainFeature = () => {
   const ReplyIcon = getIcon('reply')
   const MessageCircleIcon = getIcon('message-circle')
   const CornerDownRightIcon = getIcon('corner-down-right')
+  const FileTextIcon = getIcon('file-text')
+  const ImageIcon = getIcon('image')
+  const FileArchiveIcon = getIcon('file-archive')
+  const TrashIcon = getIcon('trash')
+  const UploadIcon = getIcon('upload')
   const XIcon = getIcon('x')
   const CheckCircleIcon = getIcon('check-circle')
   const ClockIcon = getIcon('clock')
+  const LinkIcon = getIcon('link')
+  const AtSignIcon = getIcon('at-sign')
+  const CodeIcon = getIcon('code')
+  const SmileIcon = getIcon('smile')
+  
+  // State
   const AlertCircleIcon = getIcon('alert-circle')
   const PaperclipIcon = getIcon('paperclip')
   const FileIcon = getIcon('file')
@@ -122,8 +137,19 @@ const MainFeature = () => {
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTask, setNewTask] = useState({
     title: '',
+  const [isDraggingFile, setIsDraggingFile] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  
+  // Refs
     description: '',
     column: 'todo',
+  const fileInputRef = useRef(null)
+  const dragCounter = useRef(0)
+  const linkifyInstance = useRef(linkify())
+  
+  // Team members for mentions
     assignee: {
       id: '1',
       name: 'Alex Morgan',
@@ -132,6 +158,7 @@ const MainFeature = () => {
     priority: 'medium',
     dueDate: new Date(Date.now() + 86400000 * 7).toISOString() // 7 days from now
   })
+  // Custom style for mentions input
   const [draggedTask, setDraggedTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [newComment, setNewComment] = useState('')
@@ -152,6 +179,7 @@ const MainFeature = () => {
   const linkifyInstance = useRef(linkify())
   
   // Team members for mentions
+  const dropZoneRef = useRef(null)
   const TEAM_MEMBERS = [
     { id: 1, display: 'Alex Morgan' },
     { id: 2, display: 'Morgan Chen' },
@@ -170,7 +198,8 @@ const MainFeature = () => {
     input: {
       margin: 0,
       padding: 0,
-      overflow: 'auto',
+      comments: [],
+      attachments: []
       height: 'auto',
     },
     suggestions: {
@@ -179,10 +208,12 @@ const MainFeature = () => {
         border: '1px solid rgba(0,0,0,0.15)',
         borderRadius: '0.375rem',
       },
+      attachments: [],
     }
   }
   const dropZoneRef = useRef(null)
   
+      priority: 'medium',
   // Save tasks to localStorage
   useEffect(() => {
     localStorage.setItem('flowsync-tasks', JSON.stringify(tasks))
@@ -368,6 +399,215 @@ const MainFeature = () => {
           }
           return { 
             ...comment, 
+  // Convert bytes to readable format
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Get icon based on file type
+  const getFileIcon = (type) => {
+    if (type.startsWith('image/')) {
+      return ImageIcon;
+    } else if (type.startsWith('text/') || type.includes('document') || type.includes('pdf')) {
+      return FileTextIcon;
+    } else if (type.includes('zip') || type.includes('compressed')) {
+      return FileArchiveIcon;
+    } else {
+      return FileIcon;
+    }
+  }
+
+  // Handle file drag events
+  const handleDragIn = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDraggingFile(true);
+    }
+  }
+
+  const handleDragOut = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+    if (dragCounter.current === 0) {
+      setIsDraggingFile(false);
+    }
+  }
+
+  const handleFileDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+    dragCounter.current = 0;
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  }
+
+  // Handle file upload
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  }
+
+  // Process files (validation and upload)
+  const handleFiles = async (files) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf', 'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/zip', 'application/x-zip-compressed',
+      'text/plain'
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    // Convert FileList to Array
+    const fileArray = Array.from(files);
+    
+    // Validate files
+    for (const file of fileArray) {
+      if (file.size > maxSize) {
+        toast.error(`File ${file.name} is too large. Maximum size is 5MB.`);
+        return;
+      }
+      
+      // Validate file type using file-type-browser
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const fileTypeResult = fileType(uint8Array);
+      
+      const mimeType = fileTypeResult ? fileTypeResult.mime : file.type;
+      
+      if (!allowedTypes.includes(mimeType)) {
+        toast.error(`File type ${mimeType} is not supported.`);
+        return;
+      }
+    }
+    
+    setUploading(true);
+    
+    // Simulate upload progress
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(progressInterval);
+        setUploading(false);
+        setUploadProgress(0);
+        
+        // Add attachments to task
+        const newAttachments = fileArray.map(file => ({
+          id: `att-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: URL.createObjectURL(file) // Create a blob URL for preview
+        }));
+        
+        const updatedTasks = tasks.map(task => 
+          task.id === selectedTask.id 
+            ? { ...task, attachments: [...(task.attachments || []), ...newAttachments] } 
+            : task
+        );
+        
+        setTasks(updatedTasks);
+        const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
+        setSelectedTask(updatedTask);
+        toast.success(`${fileArray.length} file(s) uploaded successfully`);
+      }
+    }, 200);
+  }
+
+  // Delete attachment
+  const deleteAttachment = (attachmentId) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === selectedTask.id 
+        ? {
+            ...task, 
+            attachments: task.attachments.filter(att => att.id !== attachmentId) 
+          } 
+        : task
+    );
+    
+    setTasks(updatedTasks);
+    const updatedTask = updatedTasks.find(task => task.id === selectedTask.id);
+    setSelectedTask(updatedTask);
+    toast.success("Attachment deleted successfully");
+  }
+
+  // Add emoji to text
+  const addEmoji = (emoji) => {
+    setNewComment(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+  
+  // Common emojis for quick access
+  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
+  
+  // Handle emoji selection for replies
+  const addEmojiToReply = (emoji) => {
+    setReplyText(prev => prev + emoji);
+    setShowEmojiPicker(false);
+  }
+
+  // Process text for display with formatting
+  const processFormattedText = (text) => {
+    if (!text) return '';
+    
+    // Process markdown-like formatting
+    let processedText = text
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      // Code
+      .replace(/`(.*?)`/g, '<code class="bg-surface-100 dark:bg-surface-700 px-1 py-0.5 rounded text-xs">$1</code>')
+      // Lists
+      .replace(/^- (.*)/gm, '<li>$1</li>')
+      // Replace newlines with <br>
+      .replace(/\n/g, '<br />');
+    
+    // Find and replace links
+    const matches = linkifyInstance.current.match(processedText);
+    if (matches) {
+      let lastIdx = 0;
+      let result = '';
+      
+      matches.forEach(match => {
+        // Add text before the link
+        result += processedText.slice(lastIdx, match.index);
+        
+        // Add the link
+        result += `<a href="${match.url}" target="_blank" rel="noopener noreferrer">${match.text}</a>`;
+        
+        lastIdx = match.lastIndex;
+      });
+      
+      // Add remaining text
+      result += processedText.slice(lastIdx);
+      processedText = result;
+    }
+    
+    // Process mentions
+    return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
+  };
+  
             replies: [...(comment.replies || []), reply] 
           }
         } else if (comment.replies && comment.replies.length > 0) {
@@ -385,7 +625,16 @@ const MainFeature = () => {
         const updatedComments = addReplyToComment(task.comments || [])
         return { ...task, comments: updatedComments }
       }
-      return task
+      <div className={`comment-body ${comment.formatted ? 'rich-text' : ''}`}>
+        {comment.formatted ? (
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: processFormattedText(comment.text) 
+            }}
+          />
+        ) : (
+          <p>{comment.text}</p>
+        )}
     })
     
     setTasks(updatedTasks)
@@ -414,6 +663,7 @@ const MainFeature = () => {
     if (type.startsWith('image/')) {
       return ImageIcon;
     } else if (type.startsWith('text/') || type.includes('document') || type.includes('pdf')) {
+              onChange={(e) => setReplyText(e.target.value)}
       return FileTextIcon;
     } else if (type.includes('zip') || type.includes('compressed')) {
       return FileArchiveIcon;
@@ -959,6 +1209,131 @@ const MainFeature = () => {
                     <span className={`text-xs px-2 py-0.5 rounded-full mr-2 ${
                       PRIORITY_OPTIONS.find(p => p.value === selectedTask.priority).color
                     }`}>
+              
+              {/* Attachments section */}
+              <div className="attachments-container">
+                <div className="flex items-center mb-4">
+                  <PaperclipIcon className="w-5 h-5 mr-2 text-surface-500 dark:text-surface-400" />
+                  <h3 className="text-lg font-medium">
+                    Attachments
+                    {selectedTask.attachments && selectedTask.attachments.length > 0 && 
+                      <span className="text-surface-500 dark:text-surface-400 text-sm font-normal ml-2">
+                        ({selectedTask.attachments.length})
+                      </span>
+                    }
+                  </h3>
+                </div>
+                
+                {/* Attachment list */}
+                {selectedTask.attachments && selectedTask.attachments.length > 0 && (
+                  <div className="mb-4">
+                    {selectedTask.attachments.map((attachment) => (
+                      <div key={attachment.id} className="attachment-card group">
+                        <div className="attachment-preview">
+                          {attachment.type.startsWith('image/') ? (
+                            <img src={attachment.data} alt={attachment.name} />
+                          ) : (
+                            <div className="attachment-icon">
+                              {React.createElement(getFileIcon(attachment.type), { className: "w-4 h-4" })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="attachment-info">
+                          <div className="attachment-name">{attachment.name}</div>
+                          <div className="attachment-size">{formatFileSize(attachment.size)}</div>
+                        </div>
+                        <button 
+                          className="attachment-action p-1 rounded-full bg-surface-200 dark:bg-surface-600 hover:bg-surface-300 dark:hover:bg-surface-500"
+                          onClick={() => deleteAttachment(attachment.id)}
+                        >
+                          <TrashIcon className="w-3 h-3 text-surface-600 dark:text-surface-300" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Upload area */}
+                <div 
+                  ref={dropZoneRef}
+                  className={`attachment-dropzone ${isDraggingFile ? 'attachment-dropzone-active' : ''}`}
+                  onDragEnter={handleDragIn}
+                  onDragLeave={handleDragOut}
+                  onDragOver={handleFileDragOver}
+                  onDrop={handleFileDrop}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange} 
+                    className="hidden" 
+                    multiple 
+                  />
+                  {uploading ? (
+                    <div>
+                      <p className="text-sm mb-2">Uploading files... {uploadProgress}%</p>
+                      <div className="upload-progress" style={{ width: `${uploadProgress}%` }}></div>
+                    </div>
+                  ) : (
+                    <div>
+                      <UploadIcon className="w-12 h-12 mx-auto mb-2 text-surface-400 dark:text-surface-500" />
+                      <p className="text-surface-600 dark:text-surface-300 text-sm">
+                        {isDraggingFile ? 'Drop files here' : 'Drag and drop files here or click to upload'}
+                      </p>
+                      <button 
+                        className="btn btn-outline mt-3 text-sm py-1 px-3"
+                        onClick={() => fileInputRef.current.click()}
+                      >
+                        Browse Files
+                      </button>
+                      <p className="text-xs text-surface-500 dark:text-surface-400 mt-2">
+                        Supported files: Images, PDFs, Documents, Archives (Max: 5MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              
+              <div className="flex justify-between mt-6">
+                <button
+                  onClick={() => deleteTask(selectedTask.id)}
+                  className="btn btn-outline text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900 dark:hover:bg-opacity-30"
+                >
+                  Delete Task
+                </button>
+                
+                {selectedTask.column !== 'done' ? (
+                  <button
+                    onClick={() => {
+                      const updatedTasks = tasks.map(task => 
+                        task.id === selectedTask.id ? { ...task, column: 'done' } : task
+                      )
+                      setTasks(updatedTasks)
+                      setSelectedTask(null)
+                      toast.success("Task marked as complete")
+                    }}
+                    className="btn btn-primary flex items-center space-x-2"
+                  >
+                    <CheckCircleIcon className="w-4 h-4" />
+                    <span>Mark Complete</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const updatedTasks = tasks.map(task => 
+                        task.id === selectedTask.id ? { ...task, column: 'in-progress' } : task
+                      )
+                      setTasks(updatedTasks)
+                      setSelectedTask(null)
+                      toast.info("Task moved to In Progress")
+                    }}
+                    className="btn btn-secondary flex items-center space-x-2"
+                  >
+                    Reopen Task
+                  </button>
+                )}
+              </div>
                       {selectedTask.priority}
                     </span>
                     <span className="text-xs text-surface-500 dark:text-surface-400">
@@ -966,6 +1341,8 @@ const MainFeature = () => {
                     </span>
                   </div>
                 </div>
+
+export default MainFeature
                 <button 
                   onClick={() => setSelectedTask(null)}
                   className="p-1 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700"
