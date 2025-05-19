@@ -176,8 +176,9 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
           </div>
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
           <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
-                      </button>
-                    </div>
+            Recent Projects
+          </h2>
+          <div className="space-y-2">
                     
                     {/* Place NotificationBell outside of button for Recent Projects item */}
                     {item === "Recent Projects" && (
