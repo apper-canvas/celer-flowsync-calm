@@ -143,6 +143,9 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <div className="space-y-2">
               {navigationItems.map((item) => (
                 <div key={item} className="mb-2 flex items-center">
+                  <div className={`flex items-center ${
+                    item === "Recent Projects" ? "flex-1" : "w-full"
+                  }`}>
                     <button
                       onClick={() => {
                         if (item === "Home") navigate("/");
@@ -152,9 +155,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                           );
                         setActiveMenuItem(item);
                       }}
-                      className={`flex items-center ${
-                        item === "Recent Projects" ? "flex-1" : "w-full"
-                      } py-2 px-4 rounded-md text-left ${
+                      className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
                         item === activePage
                           ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
                           : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
@@ -163,12 +164,12 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                       {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
                       {item}
                     </button>
-                    
-                    {item === "Recent Projects" && (
-                      <div className="ml-2">
-                        <NotificationBell />
-                      </div>
-                    )}
+                  </div>
+                  {item === "Recent Projects" && (
+                    <div className="ml-2">
+                      <NotificationBell />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
