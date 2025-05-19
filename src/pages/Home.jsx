@@ -143,7 +143,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <div className="space-y-2">
               {navigationItems.map((item) => (
                 <div key={item} className="mb-2 flex items-center">
-                  {item === "Recent Projects" ? (
+                  {item === "Recent Projects" && (
                     <div className="flex items-center w-full">
                       <div className="flex-1">
                         <button
@@ -169,7 +169,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                         <NotificationBell />
                       </div>
                     </div>
-                  ) : (
+                  )}
+                  {item !== "Recent Projects" && (
                     <button
                       onClick={() => {
                         if (item === "Home") navigate("/");
