@@ -34,12 +34,13 @@ const INITIAL_TASKS = [
       id: 'c1',
       name: 'Alex Morgan',
       avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
-    },
+      text: 'Initial wireframes look good. Let\'s discuss the layout in our next meeting.',
+      timestamp: new Date(Date.now() - 86400000).toISOString(),
+      replies: []
+    }],
     priority: 'medium',
     dueDate: new Date(Date.now() + 86400000 * 3).toISOString()
   },
-  comments: [],
-  {
     id: '2',
     title: 'Finalize API documentation',
     description: 'Complete the REST API documentation for the developer portal',
@@ -49,15 +50,12 @@ const INITIAL_TASKS = [
       name: 'Morgan Chen',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
     },
-    assignee: {
-      name: 'Morgan Chen',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
-    },
+    comments: [],
     priority: 'high',
     dueDate: new Date(Date.now() + 86400000 * 1).toISOString()
   },
-  comments: [],
   {
+    id: '3',
     id: '3',
     title: 'Bug fixes for v1.2',
     description: 'Address the critical bugs reported in the latest release',
@@ -67,14 +65,10 @@ const INITIAL_TASKS = [
       name: 'Jamie Wilson',
       avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
     },
-    assignee: {
-      name: 'Jamie Wilson',
-      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
-    },
+    comments: [],
     priority: 'high',
     dueDate: new Date(Date.now() - 86400000 * 1).toISOString()
   }
-  comments: []
 ]
 
 const MainFeature = () => {
