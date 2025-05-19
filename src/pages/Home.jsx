@@ -143,53 +143,35 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             <div className="space-y-2">
               {navigationItems.map((item) => (
                 <div key={item} className="mb-2 flex items-center">
-                  {item === "Recent Projects" && (
-                    <div className="flex items-center w-full">
-                      <div className="flex-1">
-                        <button
-                          onClick={() => {
-                            if (item === "Home") navigate("/");
-                            else
-                              navigate(
-                                `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                              );
-                            setActiveMenuItem(item);
-                          }}
-                          className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
-                            item === activePage
-                              ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                              : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                          }`}
-                        >
-                          {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                          {item}
-                        </button>
-                      </div>
+                  <div className="flex items-center w-full">
+                    <div className="flex-1">
+                      <button
+                        onClick={() => {
+                          if (item === "Home") navigate("/");
+                          else
+                            navigate(
+                              `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                            );
+                          setActiveMenuItem(item);
+                        }}
+                        className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
+                          item === activePage
+                            ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                            : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                        }`}
+                      >
+                        {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                        {item}
+                      </button>
+                    </div>
+                    
+                    {/* Place NotificationBell outside of button for Recent Projects item */}
+                    {item === "Recent Projects" && (
                       <div className="ml-2">
                         <NotificationBell />
                       </div>
-                    </div>
-                  )}
-                  {item !== "Recent Projects" && (
-                    <button
-                      onClick={() => {
-                        if (item === "Home") navigate("/");
-                        else
-                          navigate(
-                            `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                          );
-                        setActiveMenuItem(item);
-                      }}
-                      className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
-                        item === activePage
-                          ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                      }`}
-                    >
-                      {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                      {item}
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
