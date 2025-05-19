@@ -210,17 +210,55 @@ const Calendar = () => {
             <div className="flex items-center gap-2">
               <div className="flex items-center">
                 <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
+            </div>
+            <select 
+              className="form-input text-sm py-1 px-2"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="todo">To Do</option>
+              <option value="in-progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+            
+            <div className="flex items-center gap-2 ml-4">
+              <FilterIcon className="w-4 h-4 mr-1 text-surface-500 dark:text-surface-400" />
+              <span className="text-sm font-medium">Date Range:</span>
+            </div>
+            <input 
+              type="date" 
+              className="form-input text-sm py-1 px-2" 
+              value={format(dateRangeFilter.start, 'yyyy-MM-dd')}
+              onChange={(e) => {
+                const newStart = e.target.value ? new Date(e.target.value) : subDays(new Date(), 30);
+                setDateRangeFilter(prev => ({ ...prev, start: newStart }));
+              }}
+            />
+            <span className="text-sm mx-1">to</span>
+            <input 
+              type="date" 
+              className="form-input text-sm py-1 px-2"
+              value={format(dateRangeFilter.end, 'yyyy-MM-dd')}
+              onChange={(e) => {
+                const newEnd = e.target.value ? new Date(e.target.value) : addDays(new Date(), 60);
+                setDateRangeFilter(prev => ({ ...prev, end: newEnd }));
                 <span className="text-sm font-medium">Status:</span>
-              </div>
-              <select 
-                className="form-input text-sm py-1 px-2"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="todo">To Do</option>
-                <option value="in-progress">In Progress</option>
-                <option value="done">Done</option>
+            />
+            
+            <button
+              className="text-sm text-primary hover:text-primary-dark ml-2"
+              onClick={() => {
+                setDateRangeFilter({
+                  start: subDays(new Date(), 30),
+                  end: addDays(new Date(), 60)
+                });
+                setStatusFilter('all');
+                setPriorityFilter('all');
+              }}
+            >
+              Reset Filters
+            </button>
               </select>
             </div>
             
