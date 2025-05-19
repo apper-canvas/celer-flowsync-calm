@@ -175,6 +175,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </div>
           </div>
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
+        </aside>
+        
         {/* Main Feature (Kanban Board) */}
         <main className="flex-1 p-4 md:p-6 overflow-hidden flex flex-col">
           <div className="mb-6">
