@@ -6,7 +6,6 @@ import { getIcon } from '../utils/iconUtils'
 import linkify from 'linkify-it'
 import { MentionsInput, Mention } from 'react-mentions'
 import fileType from 'file-type-browser'
-import fileType from 'file-type-browser'
 
 // Task priority options
 const PRIORITY_OPTIONS = [
