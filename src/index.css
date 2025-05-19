@@ -85,6 +85,35 @@
   .kanban-card {
     @apply bg-white dark:bg-surface-700 p-3 rounded-lg shadow-sm mb-2 cursor-pointer hover:shadow-md transition-shadow;
   }
+  
+  /* Comment styles */
+  .comments-container {
+    @apply scrollbar-hide;
+  }
+  
+  .comment {
+    @apply bg-surface-50 dark:bg-surface-700 rounded-lg p-3 mb-3;
+  }
+  
+  .comment-reply {
+    @apply ml-6 border-l-2 border-surface-200 dark:border-surface-600 pl-3 mt-2 bg-white dark:bg-surface-800;
+  }
+  
+  .comment-header {
+    @apply flex justify-between items-center mb-2;
+  }
+  
+  .comment-user {
+    @apply flex items-center;
+  }
+  
+  .comment-body {
+    @apply text-sm text-surface-700 dark:text-surface-300 mb-2;
+  }
+  
+  .reply-form {
+    @apply mt-2 mb-3;
+  }
 }
 
 @layer utilities {

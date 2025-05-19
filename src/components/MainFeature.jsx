@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'react-toastify'
+import { formatDistanceToNow } from 'date-fns'
 import { getIcon } from '../utils/iconUtils'
 
 // Task priority options
@@ -25,17 +26,29 @@ const INITIAL_TASKS = [
     description: 'Design the initial wireframes for the new product landing page',
     column: 'todo',
     assignee: {
+      id: '1',
+      name: 'Alex Morgan',
+      avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+    },
+    comments: [{
+      id: 'c1',
       name: 'Alex Morgan',
       avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
     },
     priority: 'medium',
     dueDate: new Date(Date.now() + 86400000 * 3).toISOString()
   },
+  comments: [],
   {
     id: '2',
     title: 'Finalize API documentation',
     description: 'Complete the REST API documentation for the developer portal',
     column: 'in-progress',
+    assignee: {
+      id: '2',
+      name: 'Morgan Chen',
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+    },
     assignee: {
       name: 'Morgan Chen',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
@@ -43,11 +56,17 @@ const INITIAL_TASKS = [
     priority: 'high',
     dueDate: new Date(Date.now() + 86400000 * 1).toISOString()
   },
+  comments: [],
   {
     id: '3',
     title: 'Bug fixes for v1.2',
     description: 'Address the critical bugs reported in the latest release',
     column: 'done',
+    assignee: {
+      id: '3',
+      name: 'Jamie Wilson',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+    },
     assignee: {
       name: 'Jamie Wilson',
       avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
@@ -55,11 +74,16 @@ const INITIAL_TASKS = [
     priority: 'high',
     dueDate: new Date(Date.now() - 86400000 * 1).toISOString()
   }
+  comments: []
 ]
 
 const MainFeature = () => {
   // Icons
   const PlusIcon = getIcon('plus')
+  const SendIcon = getIcon('send')
+  const ReplyIcon = getIcon('reply')
+  const MessageCircleIcon = getIcon('message-circle')
+  const CornerDownRightIcon = getIcon('corner-down-right')
   const XIcon = getIcon('x')
   const CheckCircleIcon = getIcon('check-circle')
   const ClockIcon = getIcon('clock')
@@ -76,6 +100,7 @@ const MainFeature = () => {
     description: '',
     column: 'todo',
     assignee: {
+      id: '1',
       name: 'Alex Morgan',
       avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
     },
@@ -84,6 +109,12 @@ const MainFeature = () => {
   })
   const [draggedTask, setDraggedTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
+  const [newComment, setNewComment] = useState('')
+  const [replyTo, setReplyTo] = useState(null)
+  const [replyText, setReplyText] = useState('')
+  
+  // Refs
+  const commentInputRef = useRef(null)
   
   // Save tasks to localStorage
   useEffect(() => {
@@ -101,12 +132,14 @@ const MainFeature = () => {
     
     const task = {
       ...newTask,
-      id: Date.now().toString()
+      id: Date.now().toString(),
+      comments: []
     }
     
     setTasks([...tasks, task])
     setNewTask({
       title: '',
+      comments: [],
       description: '',
       column: 'todo',
       assignee: {
@@ -164,6 +197,175 @@ const MainFeature = () => {
     setTasks(tasks.filter(task => task.id !== taskId))
     setSelectedTask(null)
     toast.success("Task deleted successfully")
+  }
+  
+  // Add a comment to a task
+  const addComment = (e) => {
+    e.preventDefault()
+    
+    if (!newComment.trim()) {
+      toast.error("Comment cannot be empty")
+      return
+    }
+    
+    const comment = {
+      id: `c-${Date.now()}`,
+      text: newComment,
+      name: 'You', // In a real app, this would be the current user
+      avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+      timestamp: new Date().toISOString(),
+      replies: []
+    }
+    
+    const updatedTasks = tasks.map(task => 
+      task.id === selectedTask.id 
+        ? { ...task, comments: [...(task.comments || []), comment] } 
+        : task
+    )
+    
+    setTasks(updatedTasks)
+    setSelectedTask({...selectedTask, comments: [...(selectedTask.comments || []), comment]})
+    setNewComment('')
+    toast.success("Comment added successfully")
+  }
+  
+  // Add a reply to a comment
+  const addReply = (commentId) => {
+    if (!replyText.trim()) {
+      toast.error("Reply cannot be empty")
+      return
+    }
+    
+    const addReplyToComment = (comments) => {
+      return comments.map(comment => {
+        if (comment.id === commentId) {
+          const reply = {
+            id: `r-${Date.now()}`,
+            text: replyText,
+            name: 'You', // In a real app, this would be the current user
+            avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=120&q=80',
+            timestamp: new Date().toISOString(),
+            replies: []
+          }
+          return { 
+            ...comment, 
+            replies: [...(comment.replies || []), reply] 
+          }
+        } else if (comment.replies && comment.replies.length > 0) {
+          return { 
+            ...comment, 
+            replies: addReplyToComment(comment.replies) 
+          }
+        }
+        return comment
+      })
+    }
+    
+    const updatedTasks = tasks.map(task => {
+      if (task.id === selectedTask.id) {
+        const updatedComments = addReplyToComment(task.comments || [])
+        return { ...task, comments: updatedComments }
+      }
+      return task
+    })
+    
+    setTasks(updatedTasks)
+    
+    // Update selected task to reflect changes
+    const updatedSelectedTask = updatedTasks.find(task => task.id === selectedTask.id)
+    setSelectedTask(updatedSelectedTask)
+    
+    setReplyTo(null)
+    setReplyText('')
+    toast.success("Reply added successfully")
+  }
+  
+  // Format relative time (e.g., "2 minutes ago")
+  const formatRelativeTime = (dateString) => {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true })
+  }
+  
+  // Render a comment and its replies
+  const renderComment = (comment, level = 0) => {
+    return (
+      <div key={comment.id} className={`comment ${level > 0 ? 'comment-reply' : ''}`}>
+        <div className="comment-header">
+          <div className="comment-user">
+            <img 
+              src={comment.avatar} 
+              alt={comment.name} 
+              className="w-6 h-6 rounded-full mr-2"
+            />
+            <span className="font-medium">{comment.name}</span>
+          </div>
+          <span className="text-xs text-surface-500 dark:text-surface-400">
+            {formatRelativeTime(comment.timestamp)}
+          </span>
+        </div>
+        
+        <div className="comment-body">
+          <p>{comment.text}</p>
+        </div>
+        
+        <div className="comment-actions">
+          <button 
+            className="text-xs text-primary-dark dark:text-primary-light flex items-center"
+            onClick={() => {
+              setReplyTo(comment.id)
+              setReplyText('')
+              setTimeout(() => {
+                commentInputRef.current?.focus()
+              }, 100)
+            }}
+          >
+            <ReplyIcon className="w-3 h-3 mr-1" />
+            Reply
+          </button>
+        </div>
+        
+        {replyTo === comment.id && (
+          <div className="reply-form">
+            <div className="flex items-center space-x-2 mb-1">
+              <CornerDownRightIcon className="w-3 h-3 text-surface-400" />
+              <span className="text-xs text-surface-500 dark:text-surface-400">
+                Replying to {comment.name}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="text"
+                placeholder="Write a reply..."
+                className="form-input text-sm py-1 flex-1"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                ref={commentInputRef}
+              />
+              <div className="flex space-x-2 ml-2">
+                <button
+                  className="btn btn-sm btn-outline text-xs py-1"
+                  onClick={() => setReplyTo(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-sm btn-primary text-xs py-1 flex items-center"
+                  onClick={() => addReply(comment.id)}
+                >
+                  <SendIcon className="w-3 h-3 mr-1" />
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="replies">
+            {comment.replies.map(reply => renderComment(reply, level + 1))}
+          </div>
+        )}
+      </div>
+    )
   }
   
   return (
@@ -430,7 +632,7 @@ const MainFeature = () => {
               </div>
               
               <div className="mb-4 bg-surface-50 dark:bg-surface-700 p-3 rounded-lg">
-                <p className="text-surface-600 dark:text-surface-300 whitespace-pre-line">
+                <p className="text-surface-700 dark:text-surface-300 whitespace-pre-line">
                   {selectedTask.description || "No description provided."}
                 </p>
               </div>
@@ -466,6 +668,50 @@ const MainFeature = () => {
                   </p>
                 </div>
               </div>
+              {/* Comments section */}
+              <div className="mt-6 border-t border-surface-200 dark:border-surface-700 pt-4">
+                <div className="flex items-center mb-4">
+                  <MessageCircleIcon className="w-5 h-5 mr-2 text-surface-500 dark:text-surface-400" />
+                  <h3 className="text-lg font-medium">
+                    Comments 
+                    {selectedTask.comments && selectedTask.comments.length > 0 && 
+                      <span className="text-surface-500 dark:text-surface-400 text-sm font-normal ml-2">
+                        ({selectedTask.comments.length})
+                      </span>
+                    }
+                  </h3>
+                </div>
+                
+                {/* Comment form */}
+                <form onSubmit={addComment} className="mb-4">
+                  <div className="flex">
+                    <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      className="form-input flex-1"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                    />
+                    <button
+                      type="submit"
+                      className="btn btn-primary ml-2"
+                      disabled={!newComment.trim()}
+                    >
+                      <SendIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </form>
+                
+                {/* Comments list */}
+                <div className="space-y-4 max-h-60 overflow-y-auto comments-container">
+                  {!selectedTask.comments || selectedTask.comments.length === 0 ? (
+                    <p className="text-surface-500 dark:text-surface-400 text-sm text-center py-4">No comments yet. Be the first to comment!</p>
+                  ) : (
+                    selectedTask.comments.map(comment => renderComment(comment))
+                  )}
+                </div>
+              </div>
+              
               
               <div className="flex justify-between">
                 <button
