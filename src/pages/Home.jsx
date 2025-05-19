@@ -5,6 +5,7 @@ import { toast } from 'react-toastify'
 import { getIcon } from '../utils/iconUtils'
 import MainFeature from '../components/MainFeature'
 import Dashboard from './Dashboard'
+import Calendar from './Calendar'
 
 const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
   const MoonIcon = getIcon('moon')
@@ -30,7 +31,13 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
 
   // Handle navigation
   const handleNavigation = (page) => {
-    navigate(page === 'Dashboard' ? '/dashboard' : '/')
+    if (page === 'Dashboard') {
+      navigate('/dashboard')
+    } else if (page === 'Calendar') {
+      navigate('/calendar')
+    } else {
+      navigate('/')
+    }
   }
 
   return (
@@ -157,7 +164,13 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </p>
           </div>
           
-          {activePage === 'Dashboard' ? <Dashboard /> : <MainFeature />}
+          {activePage === 'Dashboard' ? (
+            <Dashboard />
+          ) : activePage === 'Calendar' ? (
+            <Calendar />
+          ) : (
+            <MainFeature />
+          )}
         </main>
       </div>
     </div>
