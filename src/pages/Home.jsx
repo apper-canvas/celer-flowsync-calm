@@ -177,25 +177,24 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </div>
           </div>
           
-          
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
-            <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
-              Recent Projects
-            </h2>
-            <div className="space-y-2">
-              {['Website Redesign', 'Mobile App Launch', 'Q3 Planning'].map((project, index) => (
-                <button
-                  key={project}
-                  onClick={() => {
-                    handleNavigation('Recent Projects');
-                    toast.info(`Navigating to ${project} project details`);
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 truncate"
-                >
-                  {project}
-                </button>
-              ))}
-            </div>
+          <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
+            Recent Projects
+          </h2>
+          <div className="space-y-2">
+            {['Website Redesign', 'Mobile App Launch', 'Q3 Planning'].map((project, index) => (
+              <button
+                key={project}
+                onClick={() => {
+                  handleNavigation('Recent Projects');
+                  toast.info(`Navigating to ${project} project details`);
+                }}
+                className="w-full text-left px-3 py-2 rounded-lg text-sm text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 truncate"
+              >
+                {project}
+              </button>
+            ))}
+          </div>
         </aside>
 
         {/* Main Feature (Kanban Board) */}
