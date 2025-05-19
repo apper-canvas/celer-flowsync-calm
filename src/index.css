@@ -129,7 +129,11 @@
   }
 
   .attachment-card {
-    @apply flex items-center bg-surface-50 dark:bg-surface-700 rounded-lg p-2 mb-2 relative group;
+    @apply flex items-center bg-surface-50 dark:bg-surface-700 rounded-lg p-2 mb-2 relative;
+  }
+  
+  .attachment-card.group {
+    /* The group class should be added directly in HTML, not via @apply */
   }
 
   .attachment-icon {
