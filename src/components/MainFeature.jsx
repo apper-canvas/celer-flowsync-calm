@@ -41,6 +41,7 @@ const INITIAL_TASKS = [
     priority: 'medium',
     dueDate: new Date(Date.now() + 86400000 * 3).toISOString()
   },
+  {
     id: '2',
     title: 'Finalize API documentation',
     description: 'Complete the REST API documentation for the developer portal',
@@ -55,7 +56,6 @@ const INITIAL_TASKS = [
     dueDate: new Date(Date.now() + 86400000 * 1).toISOString()
   },
   {
-    id: '3',
     id: '3',
     title: 'Bug fixes for v1.2',
     description: 'Address the critical bugs reported in the latest release',
