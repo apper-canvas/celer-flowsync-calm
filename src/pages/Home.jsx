@@ -142,27 +142,31 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
             </h2>
             <div className="space-y-2">
               {navigationItems.map((item) => (
-                <div key={item} className="mb-2 flex items-center">
-                  <button
-                    onClick={() => {
-                      if (item === "Home") navigate("/");
-                      else
-                        navigate(
-                          `/${item.toLowerCase().replace(/\s+/g, "-")}`
-                        );
-                      setActiveMenuItem(item);
-                    }}
-                    className={`flex items-center w-full py-2 px-4 rounded-md text-left ${
-                      item === activePage
-                        ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
-                    {item}
-                  </button>
-                  
-                  {item === "Recent Projects" && (
+                <div key={item} className="mb-2">
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => {
+                        if (item === "Home") navigate("/");
+                        else
+                          navigate(
+                            `/${item.toLowerCase().replace(/\s+/g, "-")}`
+                          );
+                        setActiveMenuItem(item);
+                      }}
+                      className={`flex items-center ${
+                        item === "Recent Projects" ? "flex-1" : "w-full"
+                      } py-2 px-4 rounded-md text-left ${
+                        item === activePage
+                          ? "bg-indigo-100 text-indigo-600 dark:bg-slate-700 dark:text-white"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      {getIcon(item.toLowerCase().replace(/\s+/g, "-"), "mr-3")}
+                      {item}
+                    </button>
+                    
+                    {/* Place NotificationBell as a sibling, not child of button */}
+                    {item === "Recent Projects" && (
                     <div className="ml-2">
                       <NotificationBell />
                     </div>
@@ -174,7 +178,7 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
 
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
           
-          <div className="mt-8">
+          <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
             <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
               Recent Projects
             </h2>
