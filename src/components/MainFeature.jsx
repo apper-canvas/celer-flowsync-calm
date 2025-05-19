@@ -6,6 +6,7 @@ import { getIcon } from '../utils/iconUtils'
 import linkify from 'linkify-it'
 import { MentionsInput, Mention } from 'react-mentions'
 import fileType from 'file-type-browser'
+import fileType from 'file-type-browser'
 
 // Task priority options
 const PRIORITY_OPTIONS = [
@@ -102,6 +103,7 @@ const MainFeature = () => {
   const SendIcon = getIcon('send')
   const ReplyIcon = getIcon('reply')
   const MessageCircleIcon = getIcon('message-circle')
+  const ListIcon = getIcon('list')
   const CornerDownRightIcon = getIcon('corner-down-right')
   const FileIcon = getIcon('file')
   const FileTextIcon = getIcon('file-text')
@@ -118,7 +120,6 @@ const MainFeature = () => {
   const [replyTo, setReplyTo] = useState(null)
   const [replyText, setReplyText] = useState('')
   const [formattedReplyText, setFormattedReplyText] = useState('')
-  const [isDraggingFile, setIsDraggingFile] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -153,12 +154,14 @@ const MainFeature = () => {
   const [draggedTask, setDraggedTask] = useState(null)
   const [selectedTask, setSelectedTask] = useState(null)
   const [newComment, setNewComment] = useState('')
-
-      priority: 'medium',
+  
   // Save tasks to localStorage
   useEffect(() => {
     localStorage.setItem('flowsync-tasks', JSON.stringify(tasks))
   }, [tasks])
+  
+  // Common emojis for quick access
+  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥']
   
   // Handle new task form submission
   const handleAddTask = (e) => {
@@ -229,30 +232,32 @@ const MainFeature = () => {
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    if (type && type.startsWith('image/')) {
-      return ImageIcon;
-    } else if (type && (type.startsWith('text/') || type.includes('document') || type.includes('pdf'))) {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']; 
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
   // Get icon based on file type
   const getFileIcon = (type) => {
     if (type.startsWith('image/')) {
-    if (type && type.startsWith('image/')) {
+      return ImageIcon;
     } else if (type.startsWith('text/') || type.includes('document') || type.includes('pdf')) {
-              onChange={(e) => setReplyText(e.target.value)}
       return FileTextIcon;
+    } else if (type.includes('zip') || type.includes('compressed')) {
+      return FileArchiveIcon;
+    } else {
+      return FileIcon;
+    }
+  }
   
   // Handle task dragging start
   const handleDragStart = (task) => {
     setDraggedTask(task)
   }
-    } else if (type.includes('zip') || type.includes('compressed')) {
+  
   // Allow dropping
   const handleDragOver = (e) => {
     e.preventDefault()
-  }
-    } else {
-      return FileIcon;
-    }
   }
 
   // Handle file drag events
@@ -427,9 +432,6 @@ const MainFeature = () => {
     setShowEmojiPicker(false);
   }
   
-  // Common emojis for quick access
-  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
-  
   // Handle emoji selection for replies
   const addEmojiToReply = (emoji) => {
     setReplyText(prev => prev + emoji);
@@ -483,9 +485,6 @@ const MainFeature = () => {
     setTimeout(() => input.setSelectionRange(newCursorPosition, newCursorPosition), 0)
   }
   
-  // Common emojis for quick access
-  const commonEmojis = ['👍', '👎', '😊', '🎉', '❤️', '👀', '🚀', '🤔', '👌', '🔥'];
-  
   // Process text for display with formatting
   const processFormattedText = (text) => {
     if (!text) return '';
@@ -526,7 +525,8 @@ const MainFeature = () => {
     
     // Process mentions
     return processedText.replace(/@\[(.*?)\]\((\d+)\)/g, '<span class="mention">@$1</span>');
-  
+  }
+
   // Add a comment to a task
   const addComment = (e) => {
     e.preventDefault()
@@ -608,7 +608,6 @@ const MainFeature = () => {
     setReplyText('')
     toast.success("Reply added successfully")
   }
-  };
   
   // Render a comment and its replies
   const renderComment = (comment, level = 0) => {
