@@ -167,16 +167,16 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                     
                     {/* Place NotificationBell as a sibling, not child of button */}
                     {item === "Recent Projects" && (
-                    <div className="ml-2">
-                      <NotificationBell />
-                    </div>
-                  )}
+                      <div className="ml-2">
+                        <NotificationBell />
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
+          
           
           <div className="divider my-4 border-t border-surface-200 dark:border-surface-700"></div>
             <h2 className="text-sm font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider mb-3">
@@ -194,10 +194,8 @@ const Home = ({ toggleDarkMode, isDarkMode, activePage = "My Tasks" }) => {
                 >
                   {project}
                 </button>
-                
               ))}
             </div>
-          </div>
         </aside>
 
         {/* Main Feature (Kanban Board) */}
